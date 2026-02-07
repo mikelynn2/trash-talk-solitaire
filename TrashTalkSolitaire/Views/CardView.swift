@@ -73,16 +73,16 @@ struct CardView: View {
                 Text(card.rank.display)
                     .font(.system(size: width * 0.5, weight: .bold))
                 Text(card.suit.symbol)
-                    .font(.system(size: width * 0.28))
+                    .font(.system(size: width * 0.25))
             }
             .foregroundColor(suitColor)
-            .position(x: width * 0.32, y: height * 0.12)
+            .position(x: width * 0.32, y: height * 0.14)
             
-            // HUGE center suit - positioned in lower half
+            // Large center suit - sized to fit with room for top text
             Text(card.suit.symbol)
-                .font(.system(size: width * 1.1))
+                .font(.system(size: width * 0.85))
                 .foregroundColor(suitColor)
-                .position(x: geo.size.width / 2, y: geo.size.height * 0.58)
+                .position(x: geo.size.width / 2, y: geo.size.height * 0.62)
         }
     }
 
