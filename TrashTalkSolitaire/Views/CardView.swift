@@ -80,9 +80,9 @@ struct CardView: View {
             
             // Large center suit - sized to fit with room for top text
             Text(card.suit.symbol)
-                .font(.system(size: width * 0.85))
+                .font(.system(size: width * 0.75))
                 .foregroundColor(suitColor)
-                .position(x: geo.size.width / 2, y: geo.size.height * 0.62)
+                .position(x: geo.size.width / 2, y: geo.size.height * 0.65)
         }
     }
 
