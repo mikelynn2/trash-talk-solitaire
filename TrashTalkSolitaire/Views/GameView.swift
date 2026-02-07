@@ -224,7 +224,6 @@ struct GameView: View {
             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
                 let source = MoveSource.tableau(pile: pile, cardIndex: index)
                 let isSelected = isSourceSelected(source)
-                let isDragging = isBeingDragged(source)
                 let isPartOfDrag = isDraggedSubstack(pile: pile, cardIndex: index)
 
                 CardView(card: card, isSelected: isSelected, width: cardWidth)
