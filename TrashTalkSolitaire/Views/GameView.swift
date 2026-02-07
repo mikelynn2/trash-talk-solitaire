@@ -259,7 +259,7 @@ struct GameView: View {
             }
             .onEnded { value in
                 handleDrop(at: value.location)
-                withAnimation(.spring(response: 0.3)) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     dragOffset = .zero
                 }
                 dragSource = nil
@@ -310,25 +310,27 @@ struct GameView: View {
         }
     }
 
-    // Simple hit-testing using screen geometry
+    // Simple hit-testing using screen geometry - generous hit zones for easier dropping
+    private let dropPadding: CGFloat = 25 // Extra padding around drop targets
+    
     private func foundationFrame(pile: Int, location: CGPoint) -> CGRect? {
         let screenWidth = UIScreen.main.bounds.width
         let hPad: CGFloat = 8
         let colWidth = (screenWidth - hPad * 2) / 7
-        let x = hPad + colWidth * CGFloat(3 + pile) + (colWidth - cardWidth) / 2
-        let y: CGFloat = 120 // approximate
-        return CGRect(x: x, y: y, width: cardWidth, height: cardHeight)
+        let x = hPad + colWidth * CGFloat(3 + pile) + (colWidth - cardWidth) / 2 - dropPadding
+        let y: CGFloat = 120 - dropPadding // approximate
+        return CGRect(x: x, y: y, width: cardWidth + dropPadding * 2, height: cardHeight + dropPadding * 2)
     }
 
     private func tableauFrame(pile: Int, location: CGPoint) -> CGRect? {
         let screenWidth = UIScreen.main.bounds.width
         let hPad: CGFloat = 8
         let colWidth = (screenWidth - hPad * 2) / 7
-        let x = hPad + colWidth * CGFloat(pile) + (colWidth - cardWidth) / 2
-        let y: CGFloat = 200 // approximate top of tableau
+        let x = hPad + colWidth * CGFloat(pile) + (colWidth - cardWidth) / 2 - dropPadding
+        let y: CGFloat = 200 - dropPadding // approximate top of tableau
         let pileCount = vm.state.tableau[pile].count
-        let height = cardHeight + CGFloat(max(0, pileCount - 1)) * tableauSpacing + 40
-        return CGRect(x: x, y: y, width: cardWidth, height: height)
+        let height = cardHeight + CGFloat(max(0, pileCount - 1)) * tableauSpacing + 80 + dropPadding * 2
+        return CGRect(x: x, y: y, width: cardWidth + dropPadding * 2, height: height)
     }
 
     private func isSourceSelected(_ source: MoveSource) -> Bool {
