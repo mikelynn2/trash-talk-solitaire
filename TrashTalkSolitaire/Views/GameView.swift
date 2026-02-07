@@ -40,11 +40,11 @@ struct GameView: View {
                     HStack(spacing: 0) {
                         // Stock
                         stockView
-                            .frame(width: colWidth)
+                            .frame(width: colWidth, alignment: .center)
 
                         // Waste
                         wasteView
-                            .frame(width: colWidth)
+                            .frame(width: colWidth, alignment: .center)
 
                         Spacer()
                             .frame(width: colWidth)
@@ -52,7 +52,7 @@ struct GameView: View {
                         // 4 Foundation piles
                         ForEach(0..<4, id: \.self) { i in
                             foundationView(pile: i)
-                                .frame(width: colWidth)
+                                .frame(width: colWidth, alignment: .center)
                         }
                     }
                     .padding(.horizontal, hPad)
@@ -62,7 +62,7 @@ struct GameView: View {
                     HStack(alignment: .top, spacing: 0) {
                         ForEach(0..<7, id: \.self) { pile in
                             tableauPileView(pile: pile, colWidth: colWidth)
-                                .frame(width: colWidth)
+                                .frame(width: colWidth, alignment: .center)
                         }
                     }
                     .padding(.horizontal, hPad)
@@ -267,7 +267,21 @@ struct GameView: View {
                 dragOffset = value.translation
             }
             .onEnded { value in
-                handleDrop(at: value.location)
+                // Check for flick gesture (fast swipe)
+                let velocity = CGSize(
+                    width: value.predictedEndLocation.x - value.location.x,
+                    height: value.predictedEndLocation.y - value.location.y
+                )
+                let speed = hypot(velocity.width, velocity.height)
+                
+                if speed > 100 {
+                    // It's a flick! Try to auto-move based on direction
+                    handleFlick(velocity: velocity, from: source)
+                } else {
+                    // Normal drop
+                    handleDrop(at: value.location)
+                }
+                
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     dragOffset = .zero
                 }
@@ -275,6 +289,54 @@ struct GameView: View {
                 dragCards = []
                 dragStartLocation = .zero
             }
+    }
+    
+    private func handleFlick(velocity: CGSize, from source: MoveSource) {
+        // Flick up = try foundation first
+        if velocity.height < -50 && dragCards.count == 1 {
+            if let card = dragCards.first {
+                for pile in 0..<4 {
+                    if canDropOnFoundation(pile: pile) {
+                        _ = vm.executeMove(from: source, to: .foundation(pile: pile))
+                        vm.selectedSource = nil
+                        return
+                    }
+                }
+            }
+        }
+        
+        // Flick left/right = find tableau pile in that direction
+        if abs(velocity.width) > abs(velocity.height) {
+            let currentX = dragStartLocation.x
+            let screenWidth = UIScreen.main.bounds.width
+            let colWidth = screenWidth / 7
+            let currentPile = Int(currentX / colWidth)
+            
+            // Determine target pile based on flick direction
+            let targetPiles: [Int]
+            if velocity.width > 0 {
+                // Flicking right
+                targetPiles = Array((currentPile + 1)..<7)
+            } else {
+                // Flicking left
+                targetPiles = Array((0..<currentPile).reversed())
+            }
+            
+            for pile in targetPiles {
+                if canDropOnTableau(pile: pile) {
+                    _ = vm.executeMove(from: source, to: .tableau(pile: pile))
+                    vm.selectedSource = nil
+                    return
+                }
+            }
+        }
+        
+        // Fallback to normal drop detection
+        let endLocation = CGPoint(
+            x: dragStartLocation.x + dragOffset.width + velocity.width * 0.3,
+            y: dragStartLocation.y + dragOffset.height + velocity.height * 0.3
+        )
+        handleDrop(at: endLocation)
     }
 
     // MARK: - Dragged Cards Overlay
