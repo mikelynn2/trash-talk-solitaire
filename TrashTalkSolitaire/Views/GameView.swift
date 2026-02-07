@@ -400,38 +400,140 @@ struct WinOverlay: View {
     let moveCount: Int
     let time: String
     let onNewGame: () -> Void
-
+    
+    @State private var showConfetti = false
+    @State private var trophyScale: CGFloat = 0.1
+    @State private var trophyRotation: Double = -30
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Text("🏆")
-                .font(.system(size: 80))
-
-            Text("YOU WIN!")
-                .font(.system(size: 36, weight: .black, design: .rounded))
-                .foregroundColor(.yellow)
-
-            VStack(spacing: 8) {
-                Text("Moves: \(moveCount)")
-                Text("Time: \(time)")
+        ZStack {
+            // Confetti layer
+            if showConfetti {
+                ConfettiView()
+                    .ignoresSafeArea()
             }
-            .font(.system(size: 18, weight: .medium))
-            .foregroundColor(.white.opacity(0.8))
+            
+            VStack(spacing: 20) {
+                Text("🏆")
+                    .font(.system(size: 100))
+                    .scaleEffect(trophyScale)
+                    .rotationEffect(.degrees(trophyRotation))
 
-            Button(action: onNewGame) {
-                Text("New Game")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 12)
-                    .background(Color.yellow)
-                    .cornerRadius(12)
+                Text("YOU WIN!")
+                    .font(.system(size: 42, weight: .black, design: .rounded))
+                    .foregroundColor(.yellow)
+                    .shadow(color: .orange, radius: 10)
+
+                VStack(spacing: 8) {
+                    Text("Moves: \(moveCount)")
+                    Text("Time: \(time)")
+                }
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+
+                Button(action: onNewGame) {
+                    Text("Play Again")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+                        .background(Color.yellow)
+                        .cornerRadius(12)
+                        .shadow(color: .yellow.opacity(0.5), radius: 8)
+                }
+                .padding(.top, 10)
             }
-            .padding(.top, 10)
+            .padding(40)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.black.opacity(0.9))
+                    .shadow(color: .yellow.opacity(0.3), radius: 20)
+            )
         }
-        .padding(40)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.black.opacity(0.85))
-        )
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.5)) {
+                trophyScale = 1.2
+                trophyRotation = 0
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.spring(response: 0.3)) {
+                    trophyScale = 1.0
+                }
+            }
+            showConfetti = true
+        }
     }
+}
+
+// MARK: - Confetti
+
+struct ConfettiView: View {
+    @State private var particles: [ConfettiParticle] = []
+    
+    var body: some View {
+        TimelineView(.animation) { timeline in
+            Canvas { context, size in
+                let now = timeline.date.timeIntervalSinceReferenceDate
+                
+                for particle in particles {
+                    let age = now - particle.createdAt
+                    guard age < particle.lifetime else { continue }
+                    
+                    let progress = age / particle.lifetime
+                    let y = particle.startY + (age * particle.speed) + (age * age * 200) // gravity
+                    let x = particle.startX + sin(age * particle.wobbleSpeed) * particle.wobbleAmount
+                    let rotation = age * particle.rotationSpeed
+                    let opacity = 1.0 - (progress * 0.5)
+                    
+                    guard y < size.height + 50 else { continue }
+                    
+                    context.opacity = opacity
+                    context.translateBy(x: x, y: y)
+                    context.rotate(by: .degrees(rotation))
+                    
+                    let rect = CGRect(x: -particle.size/2, y: -particle.size/2, width: particle.size, height: particle.size * 0.6)
+                    context.fill(Path(rect), with: .color(particle.color))
+                    
+                    context.rotate(by: .degrees(-rotation))
+                    context.translateBy(x: -x, y: -y)
+                }
+            }
+        }
+        .onAppear {
+            createParticles()
+        }
+    }
+    
+    private func createParticles() {
+        let colors: [Color] = [.red, .yellow, .green, .blue, .purple, .orange, .pink, .cyan]
+        let screenWidth = UIScreen.main.bounds.width
+        
+        for _ in 0..<150 {
+            particles.append(ConfettiParticle(
+                startX: CGFloat.random(in: 0...screenWidth),
+                startY: CGFloat.random(in: -100...(-20)),
+                speed: CGFloat.random(in: 80...200),
+                size: CGFloat.random(in: 8...16),
+                color: colors.randomElement()!,
+                lifetime: Double.random(in: 3...5),
+                wobbleSpeed: Double.random(in: 2...6),
+                wobbleAmount: CGFloat.random(in: 20...60),
+                rotationSpeed: Double.random(in: 100...400),
+                createdAt: Date().timeIntervalSinceReferenceDate + Double.random(in: 0...0.8)
+            ))
+        }
+    }
+}
+
+struct ConfettiParticle {
+    let startX: CGFloat
+    let startY: CGFloat
+    let speed: CGFloat
+    let size: CGFloat
+    let color: Color
+    let lifetime: Double
+    let wobbleSpeed: Double
+    let wobbleAmount: CGFloat
+    let rotationSpeed: Double
+    let createdAt: TimeInterval
 }
