@@ -180,6 +180,10 @@ struct GameView: View {
             if let card = vm.state.waste.last {
                 let isSelected = isSourceSelected(.waste)
                 CardView(card: card, isSelected: isSelected, width: cardWidth)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal: .opacity
+                    ))
                     .onTapGesture { vm.tapCard(source: .waste) }
                     .onTapGesture(count: 2) { vm.doubleTapCard(source: .waste) }
                     .gesture(dragGesture(for: .waste, cards: [card]))
@@ -188,6 +192,7 @@ struct GameView: View {
                 EmptyPileView(width: cardWidth)
             }
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: vm.state.waste.count)
     }
 
     // MARK: - Foundation
@@ -197,6 +202,7 @@ struct GameView: View {
             let suitLabels = ["♣", "♦", "♥", "♠"]
             if let card = vm.state.foundations[pile].last {
                 CardView(card: card, width: cardWidth)
+                    .transition(.scale.combined(with: .opacity))
                     .onTapGesture {
                         vm.tapCard(source: .foundation(pile: pile))
                     }
@@ -207,6 +213,7 @@ struct GameView: View {
                     }
             }
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: vm.state.foundations[pile].count)
     }
 
     // MARK: - Tableau
@@ -231,6 +238,7 @@ struct GameView: View {
                     .offset(y: CGFloat(index) * tableauSpacing)
                     .zIndex(Double(index))
                     .opacity(isPartOfDrag ? 0.0 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: index)
                     .onTapGesture(count: 2) {
                         guard card.isFaceUp else { return }
                         vm.doubleTapCard(source: source)
@@ -242,6 +250,7 @@ struct GameView: View {
                     .gesture(card.isFaceUp ? dragGesture(for: source, cards: Array(cards[index...])) : nil)
             }
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: cards.count)
         .frame(height: max(cardHeight, cardHeight + CGFloat(max(0, cards.count - 1)) * tableauSpacing))
     }
 

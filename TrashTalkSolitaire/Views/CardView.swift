@@ -5,13 +5,18 @@ struct CardView: View {
     var isSelected: Bool = false
     var width: CGFloat = 60
     var height: CGFloat { width * 1.4 }
+    
+    @State private var flipped: Bool = false
+    @State private var showFace: Bool = false
 
     var body: some View {
         ZStack {
-            if card.isFaceUp {
+            if showFace {
                 faceUpCard
+                    .rotation3DEffect(.degrees(flipped ? 0 : -90), axis: (x: 0, y: 1, z: 0))
             } else {
                 faceDownCard
+                    .rotation3DEffect(.degrees(flipped ? 90 : 0), axis: (x: 0, y: 1, z: 0))
             }
         }
         .frame(width: width, height: height)
@@ -20,6 +25,32 @@ struct CardView: View {
                 .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 3)
         )
         .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+        .onAppear {
+            showFace = card.isFaceUp
+            flipped = card.isFaceUp
+        }
+        .onChange(of: card.isFaceUp) { _, newValue in
+            if newValue {
+                // Flip to face up
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    flipped = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    showFace = true
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        // Continue rotation
+                    }
+                }
+            } else {
+                // Flip to face down
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    flipped = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    showFace = false
+                }
+            }
+        }
     }
 
     private var faceUpCard: some View {
