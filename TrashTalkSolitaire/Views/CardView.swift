@@ -76,7 +76,7 @@ struct CardView: View {
                     .font(.system(size: width * 0.25))
             }
             .foregroundColor(suitColor)
-            .position(x: width * 0.32, y: height * 0.14)
+            .position(x: width * 0.38, y: height * 0.18)
             
             // Large center suit - sized to fit with room for top text
             Text(card.suit.symbol)
