@@ -9,9 +9,9 @@ struct GameView: View {
     @State private var dragStartLocation: CGPoint = .zero
     @State private var cardFrames: [UUID: CGRect] = [:]
 
-    private let cardWidth: CGFloat = 52
-    private var cardHeight: CGFloat { cardWidth * 1.28 }
-    private let tableauSpacing: CGFloat = 20
+    private let cardWidth: CGFloat = 50
+    private var cardHeight: CGFloat { cardWidth * 1.15 }
+    private let tableauSpacing: CGFloat = 18
 
     var body: some View {
         GeometryReader { geo in
