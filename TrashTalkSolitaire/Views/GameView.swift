@@ -33,7 +33,7 @@ struct GameView: View {
                     CommentaryBubble(text: vm.commentary, mood: vm.commentaryMood)
                         .padding(.horizontal, 12)
                         .padding(.top, 6)
-                        .padding(.bottom, 16)
+                        .padding(.bottom, 28)
                         .animation(.easeInOut(duration: 0.3), value: vm.commentary)
 
                     // Stock, Waste, and Foundations row
@@ -358,7 +358,7 @@ struct GameView: View {
         let hPad: CGFloat = 8
         let colWidth = (screenWidth - hPad * 2) / 7
         let x = hPad + colWidth * CGFloat(3 + pile) + colWidth / 2
-        let y: CGFloat = 155
+        let y: CGFloat = 170
         return CGPoint(x: x, y: y)
     }
     
@@ -369,7 +369,7 @@ struct GameView: View {
         let x = hPad + colWidth * CGFloat(pile) + colWidth / 2
         let pileCount = vm.state.tableau[pile].count
         // Target the bottom of the pile (where you'd drop)
-        let y: CGFloat = 250 + CGFloat(max(0, pileCount - 1)) * tableauSpacing + cardHeight / 2
+        let y: CGFloat = 265 + CGFloat(max(0, pileCount - 1)) * tableauSpacing + cardHeight / 2
         return CGPoint(x: x, y: y)
     }
 
