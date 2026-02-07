@@ -503,68 +503,267 @@ struct WinOverlay: View {
     let time: String
     let onNewGame: () -> Void
     
+    @State private var showContent = false
     @State private var showConfetti = false
-    @State private var trophyScale: CGFloat = 0.1
-    @State private var trophyRotation: Double = -30
+    @State private var trophyScale: CGFloat = 0.0
+    @State private var titleOffset: CGFloat = -200
+    @State private var pulseGlow = false
+    @State private var showCards = false
+    @State private var backgroundOpacity: Double = 0
+    @State private var starRotation: Double = 0
+    
+    private let winMessages = [
+        "Well, I'll be... You actually did it! 👏",
+        "Against all odds, you've won. I'm genuinely shocked.",
+        "Brilliant! Even a broken clock is right twice a day.",
+        "You've won! Don't let it go to your head, dear.",
+        "Spectacular! I may have underestimated you.",
+        "Victory! I'd applaud but my hands are cards.",
+    ]
     
     var body: some View {
         ZStack {
-            // Confetti layer
+            // Full screen animated background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.1, green: 0.0, blue: 0.2),
+                    Color(red: 0.0, green: 0.1, blue: 0.3),
+                    Color(red: 0.1, green: 0.0, blue: 0.2)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            .opacity(backgroundOpacity)
+            
+            // Animated stars/sparkles background
+            ForEach(0..<20, id: \.self) { i in
+                Image(systemName: "sparkle")
+                    .font(.system(size: CGFloat.random(in: 10...30)))
+                    .foregroundColor(.yellow.opacity(Double.random(in: 0.3...0.7)))
+                    .position(
+                        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
+                    )
+                    .rotationEffect(.degrees(starRotation + Double(i * 18)))
+                    .opacity(showContent ? 1 : 0)
+            }
+            
+            // Confetti explosions
             if showConfetti {
                 ConfettiView()
                     .ignoresSafeArea()
             }
             
-            VStack(spacing: 20) {
-                Text("🏆")
-                    .font(.system(size: 100))
-                    .scaleEffect(trophyScale)
-                    .rotationEffect(.degrees(trophyRotation))
-
-                Text("YOU WIN!")
-                    .font(.system(size: 42, weight: .black, design: .rounded))
-                    .foregroundColor(.yellow)
-                    .shadow(color: .orange, radius: 10)
-
-                VStack(spacing: 8) {
-                    Text("Moves: \(moveCount)")
-                    Text("Time: \(time)")
-                }
-                .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.white.opacity(0.9))
-
-                Button(action: onNewGame) {
-                    Text("Play Again")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 32)
-                        .padding(.vertical, 12)
-                        .background(Color.yellow)
-                        .cornerRadius(12)
-                        .shadow(color: .yellow.opacity(0.5), radius: 8)
-                }
-                .padding(.top, 10)
+            // Cascading cards in background
+            if showCards {
+                CascadingCardsView()
+                    .ignoresSafeArea()
             }
-            .padding(40)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.black.opacity(0.9))
-                    .shadow(color: .yellow.opacity(0.3), radius: 20)
-            )
+            
+            // Main content
+            VStack(spacing: 24) {
+                Spacer()
+                
+                // Trophy with glow
+                ZStack {
+                    // Glow effect
+                    Text("🏆")
+                        .font(.system(size: 120))
+                        .blur(radius: pulseGlow ? 30 : 20)
+                        .opacity(0.6)
+                    
+                    Text("🏆")
+                        .font(.system(size: 120))
+                        .shadow(color: .yellow, radius: pulseGlow ? 20 : 10)
+                }
+                .scaleEffect(trophyScale)
+                
+                // Animated title
+                Text("YOU WIN!")
+                    .font(.system(size: 52, weight: .black, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.yellow, .orange, .yellow],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: .orange, radius: 15)
+                    .shadow(color: .red.opacity(0.5), radius: 25)
+                    .offset(y: titleOffset)
+                
+                // Snarky message
+                Text(winMessages.randomElement()!)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .opacity(showContent ? 1 : 0)
+                
+                Spacer().frame(height: 20)
+                
+                // Stats with icons
+                HStack(spacing: 40) {
+                    VStack(spacing: 4) {
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.cyan)
+                        Text("\(moveCount)")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                        Text("MOVES")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    
+                    VStack(spacing: 4) {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.green)
+                        Text(time)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                        Text("TIME")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                }
+                .foregroundColor(.white)
+                .opacity(showContent ? 1 : 0)
+                
+                Spacer()
+                
+                // Play again button
+                Button(action: onNewGame) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 20, weight: .bold))
+                        Text("Play Again")
+                            .font(.system(size: 20, weight: .bold))
+                    }
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 48)
+                    .padding(.vertical, 16)
+                    .background(
+                        LinearGradient(
+                            colors: [.yellow, .orange],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(30)
+                    .shadow(color: .yellow.opacity(0.6), radius: 15)
+                }
+                .scaleEffect(showContent ? 1 : 0.5)
+                .opacity(showContent ? 1 : 0)
+                
+                Spacer().frame(height: 60)
+            }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.5)) {
-                trophyScale = 1.2
-                trophyRotation = 0
+            // Sequence the animations
+            withAnimation(.easeOut(duration: 0.4)) {
+                backgroundOpacity = 1
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation(.spring(response: 0.3)) {
-                    trophyScale = 1.0
+            
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.5).delay(0.2)) {
+                trophyScale = 1.0
+            }
+            
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3)) {
+                titleOffset = 0
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    showContent = true
                 }
+                showConfetti = true
+                showCards = true
             }
-            showConfetti = true
+            
+            // Continuous glow animation
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                pulseGlow = true
+            }
+            
+            // Star rotation
+            withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+                starRotation = 360
+            }
         }
     }
+}
+
+// Cascading cards background effect
+struct CascadingCardsView: View {
+    @State private var cards: [CascadeCard] = []
+    
+    var body: some View {
+        TimelineView(.animation) { timeline in
+            Canvas { context, size in
+                let now = timeline.date.timeIntervalSinceReferenceDate
+                
+                for card in cards {
+                    let age = now - card.createdAt
+                    guard age < card.lifetime else { continue }
+                    
+                    let y = card.startY + (age * card.speed)
+                    let x = card.startX + sin(age * 2) * 30
+                    let rotation = age * card.rotationSpeed
+                    let opacity = min(1.0, age * 2) * (1.0 - (age / card.lifetime) * 0.5)
+                    
+                    guard y < size.height + 100 else { continue }
+                    
+                    context.opacity = opacity * 0.4
+                    context.translateBy(x: x, y: y)
+                    context.rotate(by: .degrees(rotation))
+                    
+                    // Draw card shape
+                    let rect = CGRect(x: -15, y: -21, width: 30, height: 42)
+                    let path = Path(roundedRect: rect, cornerRadius: 4)
+                    context.fill(path, with: .color(.white))
+                    context.stroke(path, with: .color(.gray.opacity(0.5)), lineWidth: 1)
+                    
+                    // Draw suit symbol
+                    let suits = ["♠", "♥", "♦", "♣"]
+                    let colors: [Color] = [.black, .red, .red, .black]
+                    let idx = card.suitIndex % 4
+                    
+                    context.rotate(by: .degrees(-rotation))
+                    context.translateBy(x: -x, y: -y)
+                }
+            }
+        }
+        .onAppear {
+            createCards()
+        }
+    }
+    
+    private func createCards() {
+        let screenWidth = UIScreen.main.bounds.width
+        
+        for i in 0..<30 {
+            cards.append(CascadeCard(
+                startX: CGFloat.random(in: 20...(screenWidth - 20)),
+                startY: CGFloat.random(in: -200...(-50)),
+                speed: CGFloat.random(in: 60...150),
+                rotationSpeed: Double.random(in: -100...100),
+                lifetime: Double.random(in: 5...8),
+                suitIndex: i,
+                createdAt: Date().timeIntervalSinceReferenceDate + Double.random(in: 0...2)
+            ))
+        }
+    }
+}
+
+struct CascadeCard {
+    let startX: CGFloat
+    let startY: CGFloat
+    let speed: CGFloat
+    let rotationSpeed: Double
+    let lifetime: Double
+    let suitIndex: Int
+    let createdAt: TimeInterval
 }
 
 // MARK: - Confetti
