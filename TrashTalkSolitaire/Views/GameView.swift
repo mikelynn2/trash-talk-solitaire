@@ -285,51 +285,82 @@ struct GameView: View {
 
     private func handleDrop(at location: CGPoint) {
         guard let source = dragSource else { return }
-
-        // Try dropping on each foundation
-        for pile in 0..<4 {
-            if let frame = foundationFrame(pile: pile, location: location) {
-                if frame.contains(location) {
-                    _ = vm.executeMove(from: source, to: .foundation(pile: pile))
-                    vm.selectedSource = nil
-                    return
+        
+        // Find the closest valid target (by distance to center)
+        var bestTarget: MoveDestination?
+        var bestDistance: CGFloat = .infinity
+        
+        // Check foundations (only for single cards)
+        if dragCards.count == 1 {
+            for pile in 0..<4 {
+                let center = foundationCenter(pile: pile)
+                let distance = hypot(location.x - center.x, location.y - center.y)
+                if distance < bestDistance && distance < 150 { // Max 150pt away
+                    // Check if move would be valid
+                    if canDropOnFoundation(pile: pile) {
+                        bestDistance = distance
+                        bestTarget = .foundation(pile: pile)
+                    }
                 }
             }
         }
-
-        // Try dropping on each tableau pile
+        
+        // Check tableau piles
         for pile in 0..<7 {
-            if let frame = tableauFrame(pile: pile, location: location) {
-                if frame.contains(location) {
-                    _ = vm.executeMove(from: source, to: .tableau(pile: pile))
-                    vm.selectedSource = nil
-                    return
+            let center = tableauDropCenter(pile: pile)
+            let distance = hypot(location.x - center.x, location.y - center.y)
+            if distance < bestDistance && distance < 150 { // Max 150pt away
+                // Check if move would be valid
+                if canDropOnTableau(pile: pile) {
+                    bestDistance = distance
+                    bestTarget = .tableau(pile: pile)
                 }
             }
         }
+        
+        // Execute the best valid move found
+        if let target = bestTarget {
+            _ = vm.executeMove(from: source, to: target)
+            vm.selectedSource = nil
+        }
     }
-
-    // Simple hit-testing using screen geometry - generous hit zones for easier dropping
-    private let dropPadding: CGFloat = 25 // Extra padding around drop targets
     
-    private func foundationFrame(pile: Int, location: CGPoint) -> CGRect? {
-        let screenWidth = UIScreen.main.bounds.width
-        let hPad: CGFloat = 8
-        let colWidth = (screenWidth - hPad * 2) / 7
-        let x = hPad + colWidth * CGFloat(3 + pile) + (colWidth - cardWidth) / 2 - dropPadding
-        let y: CGFloat = 120 - dropPadding // approximate
-        return CGRect(x: x, y: y, width: cardWidth + dropPadding * 2, height: cardHeight + dropPadding * 2)
+    private func canDropOnFoundation(pile: Int) -> Bool {
+        guard let card = dragCards.first, dragCards.count == 1 else { return false }
+        let topCard = vm.state.foundations[pile].last
+        return card.canStackOnFoundation(topCard) &&
+               (vm.state.foundations[pile].isEmpty || topCard?.suit == card.suit)
     }
-
-    private func tableauFrame(pile: Int, location: CGPoint) -> CGRect? {
+    
+    private func canDropOnTableau(pile: Int) -> Bool {
+        guard let card = dragCards.first else { return false }
+        if vm.state.tableau[pile].isEmpty {
+            return card.rank == .king
+        }
+        if let topCard = vm.state.tableau[pile].last {
+            return card.canStackOnTableau(topCard)
+        }
+        return false
+    }
+    
+    private func foundationCenter(pile: Int) -> CGPoint {
         let screenWidth = UIScreen.main.bounds.width
         let hPad: CGFloat = 8
         let colWidth = (screenWidth - hPad * 2) / 7
-        let x = hPad + colWidth * CGFloat(pile) + (colWidth - cardWidth) / 2 - dropPadding
-        let y: CGFloat = 200 - dropPadding // approximate top of tableau
+        let x = hPad + colWidth * CGFloat(3 + pile) + colWidth / 2
+        let y: CGFloat = 140
+        return CGPoint(x: x, y: y)
+    }
+    
+    private func tableauDropCenter(pile: Int) -> CGPoint {
+        let screenWidth = UIScreen.main.bounds.width
+        let hPad: CGFloat = 8
+        let colWidth = (screenWidth - hPad * 2) / 7
+        let x = hPad + colWidth * CGFloat(pile) + colWidth / 2
         let pileCount = vm.state.tableau[pile].count
-        let height = cardHeight + CGFloat(max(0, pileCount - 1)) * tableauSpacing + 80 + dropPadding * 2
-        return CGRect(x: x, y: y, width: cardWidth + dropPadding * 2, height: height)
+        // Target the bottom of the pile (where you'd drop)
+        let y: CGFloat = 220 + CGFloat(max(0, pileCount - 1)) * tableauSpacing + cardHeight / 2
+        return CGPoint(x: x, y: y)
     }
 
     private func isSourceSelected(_ source: MoveSource) -> Bool {
