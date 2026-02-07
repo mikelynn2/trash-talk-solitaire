@@ -13,10 +13,9 @@ struct CardView: View {
         card.rank == .jack || card.rank == .queen || card.rank == .king
     }
     
-    // Classic card colors
-    private let cardBackground = Color(red: 0.98, green: 0.96, blue: 0.92) // Cream/ivory
-    private let cardBorderOuter = Color(red: 0.75, green: 0.72, blue: 0.68)
-    private let cardBorderInner = Color(red: 0.85, green: 0.82, blue: 0.78)
+    private var suitColor: Color {
+        card.color == .red ? Color(red: 0.85, green: 0.15, blue: 0.15) : Color.black
+    }
 
     var body: some View {
         ZStack {
@@ -30,10 +29,10 @@ struct CardView: View {
         }
         .frame(width: width, height: height)
         .overlay(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 5)
                 .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 3)
         )
-        .shadow(color: .black.opacity(0.4), radius: 4, x: 2, y: 3)
+        .shadow(color: .black.opacity(0.35), radius: 3, x: 1, y: 2)
         .onAppear {
             showFace = card.isFaceUp
             flipped = card.isFaceUp
@@ -59,23 +58,13 @@ struct CardView: View {
 
     private var faceUpCard: some View {
         ZStack {
-            // Card base
-            RoundedRectangle(cornerRadius: 6)
+            // Clean white card
+            RoundedRectangle(cornerRadius: 5)
                 .fill(Color.white)
             
-            // Outer border
-            RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(cardBorderOuter, lineWidth: 1)
-            
-            // Inner cream area with decorative border
-            RoundedRectangle(cornerRadius: 4)
-                .fill(cardBackground)
-                .padding(2)
-            
-            // Decorative inner frame
-            RoundedRectangle(cornerRadius: 3)
-                .strokeBorder(cardBorderInner, lineWidth: 0.5)
-                .padding(4)
+            // Subtle border
+            RoundedRectangle(cornerRadius: 5)
+                .strokeBorder(Color.gray.opacity(0.3), lineWidth: 1)
 
             if isFaceCard {
                 faceCardContent
@@ -88,16 +77,14 @@ struct CardView: View {
     // MARK: - Number Cards (A, 2-10)
     
     private var numberCardContent: some View {
-        let suitColor = card.color == .red ? Color(red: 0.8, green: 0.1, blue: 0.1) : Color.black
-        
-        return VStack(spacing: 0) {
+        VStack(spacing: 0) {
             // Top left corner
             HStack(alignment: .top) {
-                VStack(alignment: .center, spacing: 0) {
+                VStack(alignment: .center, spacing: -2) {
                     Text(card.rank.display)
-                        .font(.system(size: width * 0.28, weight: .bold, design: .serif))
+                        .font(.system(size: width * 0.32, weight: .bold, design: .rounded))
                     Text(card.suit.symbol)
-                        .font(.system(size: width * 0.22))
+                        .font(.system(size: width * 0.28))
                 }
                 .foregroundColor(suitColor)
                 Spacer()
@@ -107,20 +94,21 @@ struct CardView: View {
 
             Spacer()
 
-            // Center pip pattern
-            centerPips(color: suitColor)
-                .frame(maxWidth: width * 0.7, maxHeight: height * 0.5)
+            // Large center suit
+            Text(card.suit.symbol)
+                .font(.system(size: width * 0.65))
+                .foregroundColor(suitColor)
 
             Spacer()
 
             // Bottom right corner (inverted)
             HStack(alignment: .bottom) {
                 Spacer()
-                VStack(alignment: .center, spacing: 0) {
-                    Text(card.suit.symbol)
-                        .font(.system(size: width * 0.22))
+                VStack(alignment: .center, spacing: -2) {
                     Text(card.rank.display)
-                        .font(.system(size: width * 0.28, weight: .bold, design: .serif))
+                        .font(.system(size: width * 0.32, weight: .bold, design: .rounded))
+                    Text(card.suit.symbol)
+                        .font(.system(size: width * 0.28))
                 }
                 .foregroundColor(suitColor)
                 .rotationEffect(.degrees(180))
@@ -130,257 +118,18 @@ struct CardView: View {
         }
     }
     
-    // Traditional pip layouts for each card value
-    @ViewBuilder
-    private func centerPips(color: Color) -> some View {
-        let pipSize = width * 0.22
-        let symbol = card.suit.symbol
-        
-        switch card.rank {
-        case .ace:
-            // Large center ace
-            Text(symbol)
-                .font(.system(size: width * 0.55))
-                .foregroundColor(color)
-            
-        case .two:
-            VStack {
-                pip(symbol, size: pipSize, color: color)
-                Spacer()
-                pip(symbol, size: pipSize, color: color, inverted: true)
-            }
-            
-        case .three:
-            VStack {
-                pip(symbol, size: pipSize, color: color)
-                Spacer()
-                pip(symbol, size: pipSize, color: color)
-                Spacer()
-                pip(symbol, size: pipSize, color: color, inverted: true)
-            }
-            
-        case .four:
-            VStack {
-                HStack {
-                    pip(symbol, size: pipSize, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color, inverted: true)
-                }
-            }
-            
-        case .five:
-            VStack {
-                HStack {
-                    pip(symbol, size: pipSize, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color)
-                }
-                Spacer()
-                pip(symbol, size: pipSize, color: color)
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color, inverted: true)
-                }
-            }
-            
-        case .six:
-            VStack {
-                HStack {
-                    pip(symbol, size: pipSize, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize, color: color, inverted: true)
-                }
-            }
-            
-        case .seven:
-            VStack(spacing: 0) {
-                HStack {
-                    pip(symbol, size: pipSize * 0.9, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.9, color: color)
-                }
-                Spacer()
-                HStack {
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.9, color: color)
-                    Spacer()
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.9, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.9, color: color)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.9, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.9, color: color, inverted: true)
-                }
-            }
-            
-        case .eight:
-            VStack(spacing: 0) {
-                HStack {
-                    pip(symbol, size: pipSize * 0.85, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.85, color: color)
-                }
-                Spacer()
-                HStack {
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.85, color: color)
-                    Spacer()
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.85, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.85, color: color)
-                }
-                Spacer()
-                HStack {
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.85, color: color, inverted: true)
-                    Spacer()
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.85, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.85, color: color, inverted: true)
-                }
-            }
-            
-        case .nine:
-            VStack(spacing: 0) {
-                HStack {
-                    pip(symbol, size: pipSize * 0.8, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.8, color: color)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.8, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.8, color: color)
-                }
-                Spacer()
-                pip(symbol, size: pipSize * 0.8, color: color)
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.8, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.8, color: color, inverted: true)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.8, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.8, color: color, inverted: true)
-                }
-            }
-            
-        case .ten:
-            VStack(spacing: 0) {
-                HStack {
-                    pip(symbol, size: pipSize * 0.75, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.75, color: color)
-                }
-                Spacer()
-                HStack {
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.75, color: color)
-                    Spacer()
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.75, color: color)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.75, color: color)
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.75, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.75, color: color, inverted: true)
-                }
-                Spacer()
-                HStack {
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.75, color: color, inverted: true)
-                    Spacer()
-                }
-                Spacer()
-                HStack {
-                    pip(symbol, size: pipSize * 0.75, color: color, inverted: true)
-                    Spacer()
-                    pip(symbol, size: pipSize * 0.75, color: color, inverted: true)
-                }
-            }
-            
-        default:
-            EmptyView()
-        }
-    }
-    
-    private func pip(_ symbol: String, size: CGFloat, color: Color, inverted: Bool = false) -> some View {
-        Text(symbol)
-            .font(.system(size: size))
-            .foregroundColor(color)
-            .rotationEffect(.degrees(inverted ? 180 : 0))
-    }
-    
     // MARK: - Face Cards (J, Q, K)
     
     private var faceCardContent: some View {
-        let suitColor = card.color == .red ? Color(red: 0.8, green: 0.1, blue: 0.1) : Color.black
-        let goldAccent = Color(red: 0.85, green: 0.65, blue: 0.2)
-        
-        return ZStack {
-            // Decorative background for face cards
-            RoundedRectangle(cornerRadius: 4)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            card.color == .red ? Color.red.opacity(0.06) : Color.blue.opacity(0.04),
-                            cardBackground
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .padding(2)
-            
+        ZStack {
             VStack(spacing: 0) {
                 // Top left corner
                 HStack(alignment: .top) {
-                    VStack(alignment: .center, spacing: 0) {
+                    VStack(alignment: .center, spacing: -2) {
                         Text(card.rank.display)
-                            .font(.system(size: width * 0.24, weight: .bold, design: .serif))
+                            .font(.system(size: width * 0.28, weight: .bold, design: .rounded))
                         Text(card.suit.symbol)
-                            .font(.system(size: width * 0.18))
+                            .font(.system(size: width * 0.22))
                     }
                     .foregroundColor(suitColor)
                     Spacer()
@@ -390,47 +139,20 @@ struct CardView: View {
 
                 Spacer()
 
-                // Central figure
-                ZStack {
-                    // Ornate frame
-                    RoundedRectangle(cornerRadius: 3)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [goldAccent.opacity(0.6), goldAccent.opacity(0.3)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 1.5
-                        )
-                        .frame(width: width * 0.65, height: height * 0.42)
-                    
-                    // Inner decorative area
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.5),
-                                    card.color == .red ? Color.red.opacity(0.08) : Color.blue.opacity(0.06)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(width: width * 0.58, height: height * 0.36)
-                    
-                    faceCardSymbol(color: suitColor, gold: goldAccent)
-                }
+                // Center illustration area
+                faceCardIllustration
+                    .frame(width: width * 0.75, height: height * 0.55)
 
                 Spacer()
 
                 // Bottom right corner (inverted)
                 HStack(alignment: .bottom) {
                     Spacer()
-                    VStack(alignment: .center, spacing: 0) {
-                        Text(card.suit.symbol)
-                            .font(.system(size: width * 0.18))
+                    VStack(alignment: .center, spacing: -2) {
                         Text(card.rank.display)
-                            .font(.system(size: width * 0.24, weight: .bold, design: .serif))
+                            .font(.system(size: width * 0.28, weight: .bold, design: .rounded))
+                        Text(card.suit.symbol)
+                            .font(.system(size: width * 0.22))
                     }
                     .foregroundColor(suitColor)
                     .rotationEffect(.degrees(180))
@@ -442,118 +164,192 @@ struct CardView: View {
     }
     
     @ViewBuilder
-    private func faceCardSymbol(color: Color, gold: Color) -> some View {
-        VStack(spacing: 1) {
-            switch card.rank {
-            case .king:
-                // Crown for King
-                Image(systemName: "crown.fill")
-                    .font(.system(size: width * 0.26, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [gold, gold.opacity(0.7)], startPoint: .top, endPoint: .bottom)
-                    )
-                Text("K")
-                    .font(.system(size: width * 0.28, weight: .black, design: .serif))
-                    .foregroundColor(color)
-                Text(card.suit.symbol)
-                    .font(.system(size: width * 0.16))
-                    .foregroundColor(color)
+    private var faceCardIllustration: some View {
+        // Classic-style face card with mirrored top/bottom
+        GeometryReader { geo in
+            let illustrationColor = card.color == .red ? 
+                Color(red: 0.7, green: 0.15, blue: 0.15) : 
+                Color(red: 0.15, green: 0.15, blue: 0.4)
+            let accentColor = Color(red: 0.85, green: 0.7, blue: 0.3) // Gold
+            
+            VStack(spacing: 0) {
+                // Top half
+                ZStack {
+                    // Body/robe area
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [illustrationColor, illustrationColor.opacity(0.7)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                     
-            case .queen:
-                // Tiara/sparkle for Queen
-                Image(systemName: "sparkles")
-                    .font(.system(size: width * 0.22, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [gold, gold.opacity(0.7)], startPoint: .top, endPoint: .bottom)
-                    )
-                Text("Q")
-                    .font(.system(size: width * 0.28, weight: .black, design: .serif))
-                    .foregroundColor(color)
-                Text(card.suit.symbol)
-                    .font(.system(size: width * 0.16))
-                    .foregroundColor(color)
+                    VStack(spacing: 1) {
+                        // Crown/hat
+                        switch card.rank {
+                        case .king:
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: geo.size.width * 0.35, weight: .bold))
+                                .foregroundColor(accentColor)
+                        case .queen:
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: geo.size.width * 0.3, weight: .bold))
+                                .foregroundColor(accentColor)
+                        case .jack:
+                            // Cap/hat for jack
+                            Image(systemName: "graduationcap.fill")
+                                .font(.system(size: geo.size.width * 0.28, weight: .bold))
+                                .foregroundColor(accentColor)
+                        default:
+                            EmptyView()
+                        }
+                        
+                        // Face
+                        Circle()
+                            .fill(Color(red: 0.95, green: 0.85, blue: 0.75))
+                            .frame(width: geo.size.width * 0.38, height: geo.size.width * 0.38)
+                            .overlay(
+                                VStack(spacing: 1) {
+                                    // Eyes
+                                    HStack(spacing: geo.size.width * 0.08) {
+                                        Circle().fill(Color.black).frame(width: 3, height: 3)
+                                        Circle().fill(Color.black).frame(width: 3, height: 3)
+                                    }
+                                    // Mouth
+                                    Capsule()
+                                        .fill(Color(red: 0.8, green: 0.4, blue: 0.4))
+                                        .frame(width: 6, height: 2)
+                                        .offset(y: 2)
+                                }
+                            )
+                        
+                        // Suit symbol on chest
+                        Text(card.suit.symbol)
+                            .font(.system(size: geo.size.width * 0.25))
+                            .foregroundColor(suitColor)
+                    }
+                    .offset(y: -geo.size.height * 0.02)
+                }
+                .frame(height: geo.size.height / 2)
+                .clipped()
+                
+                // Dividing line
+                Rectangle()
+                    .fill(accentColor)
+                    .frame(height: 1.5)
+                
+                // Bottom half (mirrored)
+                ZStack {
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [illustrationColor.opacity(0.7), illustrationColor],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                     
-            case .jack:
-                // Shield for Jack
-                Image(systemName: "shield.fill")
-                    .font(.system(size: width * 0.22, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [gold, gold.opacity(0.7)], startPoint: .top, endPoint: .bottom)
-                    )
-                Text("J")
-                    .font(.system(size: width * 0.28, weight: .black, design: .serif))
-                    .foregroundColor(color)
-                Text(card.suit.symbol)
-                    .font(.system(size: width * 0.16))
-                    .foregroundColor(color)
-                    
-            default:
-                EmptyView()
+                    VStack(spacing: 1) {
+                        Text(card.suit.symbol)
+                            .font(.system(size: geo.size.width * 0.25))
+                            .foregroundColor(suitColor)
+                        
+                        Circle()
+                            .fill(Color(red: 0.95, green: 0.85, blue: 0.75))
+                            .frame(width: geo.size.width * 0.38, height: geo.size.width * 0.38)
+                            .overlay(
+                                VStack(spacing: 1) {
+                                    HStack(spacing: geo.size.width * 0.08) {
+                                        Circle().fill(Color.black).frame(width: 3, height: 3)
+                                        Circle().fill(Color.black).frame(width: 3, height: 3)
+                                    }
+                                    Capsule()
+                                        .fill(Color(red: 0.8, green: 0.4, blue: 0.4))
+                                        .frame(width: 6, height: 2)
+                                        .offset(y: 2)
+                                }
+                            )
+                        
+                        switch card.rank {
+                        case .king:
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: geo.size.width * 0.35, weight: .bold))
+                                .foregroundColor(accentColor)
+                        case .queen:
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: geo.size.width * 0.3, weight: .bold))
+                                .foregroundColor(accentColor)
+                        case .jack:
+                            Image(systemName: "graduationcap.fill")
+                                .font(.system(size: geo.size.width * 0.28, weight: .bold))
+                                .foregroundColor(accentColor)
+                        default:
+                            EmptyView()
+                        }
+                    }
+                    .rotationEffect(.degrees(180))
+                    .offset(y: geo.size.height * 0.02)
+                }
+                .frame(height: geo.size.height / 2)
+                .clipped()
             }
+            .clipShape(RoundedRectangle(cornerRadius: 3))
+            .overlay(
+                RoundedRectangle(cornerRadius: 3)
+                    .strokeBorder(accentColor.opacity(0.5), lineWidth: 1)
+            )
         }
     }
 
     private var faceDownCard: some View {
         ZStack {
-            // Card base
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color(red: 0.12, green: 0.25, blue: 0.55))
+            // Card base - blue
+            RoundedRectangle(cornerRadius: 5)
+                .fill(Color(red: 0.15, green: 0.25, blue: 0.6))
             
-            // Outer white border
-            RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(Color.white.opacity(0.6), lineWidth: 1.5)
+            // White border
+            RoundedRectangle(cornerRadius: 5)
+                .strokeBorder(Color.white, lineWidth: 2)
             
-            // Inner area with gradient
-            RoundedRectangle(cornerRadius: 4)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.18, green: 0.35, blue: 0.65),
-                            Color(red: 0.08, green: 0.18, blue: 0.42)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .padding(3)
-            
-            // Decorative inner border
+            // Inner pattern area
             RoundedRectangle(cornerRadius: 3)
-                .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
-                .padding(5)
+                .fill(Color(red: 0.12, green: 0.22, blue: 0.55))
+                .padding(4)
             
-            // Diamond pattern grid
+            // Geometric diamond pattern
             GeometryReader { geo in
-                let gridSize = min(geo.size.width, geo.size.height) * 0.15
-                let cols = Int(geo.size.width / gridSize)
-                let rows = Int(geo.size.height / gridSize)
-                
-                ForEach(0..<rows, id: \.self) { row in
-                    ForEach(0..<cols, id: \.self) { col in
-                        if (row + col) % 2 == 0 {
-                            Image(systemName: "suit.diamond.fill")
-                                .font(.system(size: gridSize * 0.6))
-                                .foregroundColor(.white.opacity(0.12))
-                                .position(
-                                    x: CGFloat(col) * gridSize + gridSize / 2 + 8,
-                                    y: CGFloat(row) * gridSize + gridSize / 2 + 8
-                                )
+                Path { path in
+                    let spacing: CGFloat = 8
+                    let size: CGFloat = 6
+                    
+                    for x in stride(from: spacing, to: geo.size.width - spacing, by: spacing) {
+                        for y in stride(from: spacing, to: geo.size.height - spacing, by: spacing) {
+                            // Diamond shape
+                            path.move(to: CGPoint(x: x, y: y - size/2))
+                            path.addLine(to: CGPoint(x: x + size/2, y: y))
+                            path.addLine(to: CGPoint(x: x, y: y + size/2))
+                            path.addLine(to: CGPoint(x: x - size/2, y: y))
+                            path.closeSubpath()
                         }
                     }
                 }
+                .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
             }
-            .padding(8)
-            .clipped()
+            .padding(6)
             
-            // Center ornament
+            // Center design
             ZStack {
-                Circle()
+                // Outer diamond
+                Rectangle()
                     .fill(Color.white.opacity(0.1))
-                    .frame(width: width * 0.4, height: width * 0.4)
+                    .frame(width: width * 0.35, height: width * 0.35)
+                    .rotationEffect(.degrees(45))
                 
-                Image(systemName: "suit.spade.fill")
-                    .font(.system(size: width * 0.22))
-                    .foregroundColor(.white.opacity(0.3))
+                // Inner spade
+                Text("♠")
+                    .font(.system(size: width * 0.25))
+                    .foregroundColor(Color.white.opacity(0.25))
             }
         }
     }
@@ -567,15 +363,20 @@ struct EmptyPileView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 6)
+            // Subtle filled background
+            RoundedRectangle(cornerRadius: 5)
+                .fill(Color.white.opacity(0.05))
+            
+            RoundedRectangle(cornerRadius: 5)
                 .strokeBorder(
-                    isHighlighted ? Color.yellow : Color.white.opacity(0.25),
-                    style: StrokeStyle(lineWidth: isHighlighted ? 2.5 : 1.5, dash: [6])
+                    isHighlighted ? Color.yellow : Color.white.opacity(0.3),
+                    style: StrokeStyle(lineWidth: isHighlighted ? 2.5 : 1.5, dash: isHighlighted ? [] : [6])
                 )
+            
             if !label.isEmpty {
                 Text(label)
-                    .font(.system(size: width * 0.35, weight: .medium))
-                    .foregroundColor(.white.opacity(0.4))
+                    .font(.system(size: width * 0.4, weight: .medium))
+                    .foregroundColor(.white.opacity(0.35))
             }
         }
         .frame(width: width, height: height)
