@@ -56,7 +56,7 @@ struct GameView: View {
                         }
                     }
                     .padding(.horizontal, hPad)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 20)
 
                     // Tableau
                     HStack(alignment: .top, spacing: 0) {
@@ -369,7 +369,7 @@ struct GameView: View {
         let x = hPad + colWidth * CGFloat(pile) + colWidth / 2
         let pileCount = vm.state.tableau[pile].count
         // Target the bottom of the pile (where you'd drop)
-        let y: CGFloat = 235 + CGFloat(max(0, pileCount - 1)) * tableauSpacing + cardHeight / 2
+        let y: CGFloat = 250 + CGFloat(max(0, pileCount - 1)) * tableauSpacing + cardHeight / 2
         return CGPoint(x: x, y: y)
     }
 
