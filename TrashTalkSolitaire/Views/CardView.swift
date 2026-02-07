@@ -4,7 +4,7 @@ struct CardView: View {
     let card: Card
     var isSelected: Bool = false
     var width: CGFloat = 48
-    var height: CGFloat { width * 1.28 }
+    var height: CGFloat { width * 1.18 }
     
     @State private var flipped: Bool = false
     @State private var showFace: Bool = false
@@ -74,24 +74,24 @@ struct CardView: View {
         VStack(spacing: 0) {
             // Top left corner - BIG AND BOLD
             HStack(alignment: .top) {
-                VStack(alignment: .center, spacing: -4) {
+                VStack(alignment: .center, spacing: -3) {
                     Text(card.rank.display)
-                        .font(.system(size: width * 0.45, weight: .bold))
+                        .font(.system(size: width * 0.52, weight: .heavy))
                         .minimumScaleFactor(0.5)
                     Text(card.suit.symbol)
-                        .font(.system(size: width * 0.35))
+                        .font(.system(size: width * 0.42))
                 }
                 .foregroundColor(suitColor)
                 Spacer()
             }
-            .padding(.leading, 3)
-            .padding(.top, 2)
+            .padding(.leading, 2)
+            .padding(.top, 1)
 
             Spacer()
 
             // Large center suit
             Text(card.suit.symbol)
-                .font(.system(size: width * 0.7))
+                .font(.system(size: width * 0.8))
                 .foregroundColor(suitColor)
 
             Spacer()
@@ -99,18 +99,18 @@ struct CardView: View {
             // Bottom right corner (inverted)
             HStack(alignment: .bottom) {
                 Spacer()
-                VStack(alignment: .center, spacing: -4) {
+                VStack(alignment: .center, spacing: -3) {
                     Text(card.rank.display)
-                        .font(.system(size: width * 0.45, weight: .bold))
+                        .font(.system(size: width * 0.52, weight: .heavy))
                         .minimumScaleFactor(0.5)
                     Text(card.suit.symbol)
-                        .font(.system(size: width * 0.35))
+                        .font(.system(size: width * 0.42))
                 }
                 .foregroundColor(suitColor)
                 .rotationEffect(.degrees(180))
             }
-            .padding(.trailing, 3)
-            .padding(.bottom, 2)
+            .padding(.trailing, 2)
+            .padding(.bottom, 1)
         }
     }
 
@@ -148,7 +148,7 @@ struct CardView: View {
 struct EmptyPileView: View {
     var label: String = ""
     var width: CGFloat = 48
-    var height: CGFloat { width * 1.28 }
+    var height: CGFloat { width * 1.18 }
     var isHighlighted: Bool = false
 
     var body: some View {

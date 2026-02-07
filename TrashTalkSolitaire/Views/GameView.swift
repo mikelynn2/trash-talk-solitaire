@@ -10,7 +10,7 @@ struct GameView: View {
     @State private var cardFrames: [UUID: CGRect] = [:]
 
     private let cardWidth: CGFloat = 52
-    private var cardHeight: CGFloat { cardWidth * 1.28 }
+    private var cardHeight: CGFloat { cardWidth * 1.18 }
     private let tableauSpacing: CGFloat = 18
 
     var body: some View {
