@@ -251,14 +251,15 @@ final class GameViewModel: ObservableObject {
         undoStack.append(finalMove)
         state.moveCount += 1
 
-        // Analyze and comment
-        let analysis = commentator.analyzeMove(
+        // Analyze and comment (only if commentator has something to say)
+        if let analysis = commentator.analyzeMove(
             cards: cards,
             source: source,
             destination: destination,
             gameState: state
-        )
-        setCommentary(analysis.comment, mood: analysis.mood)
+        ) {
+            setCommentary(analysis.comment, mood: analysis.mood)
+        }
 
         checkWin()
         return true

@@ -10,6 +10,19 @@ struct MoveAnalysis {
 }
 
 final class Commentator {
+    
+    // MARK: - Throttling
+    
+    private var lastCommentTime: Date = .distantPast
+    private var movesSinceLastComment: Int = 0
+    private let minimumMovesBetweenComments = 2
+    private let minimumSecondsBetweenComments: TimeInterval = 4.0
+    
+    // Probability of commenting even on notable moves (to avoid fatigue)
+    private let praiseChance: Double = 0.6      // 60% chance to comment on good moves
+    private let roastChance: Double = 0.7       // 70% chance to comment on bad moves
+    private let brilliantChance: Double = 0.95  // 95% chance for brilliant moves
+    private let terribleChance: Double = 0.95   // 95% chance for terrible moves
 
     // MARK: - Move Analysis
 
@@ -18,55 +31,100 @@ final class Commentator {
         source: MoveSource,
         destination: MoveDestination,
         gameState: GameState
-    ) -> MoveAnalysis {
+    ) -> MoveAnalysis? {
         let card = cards.first!
 
+        // Determine mood and comment based on move type
+        var mood: CommentaryMood = .neutral
+        var comment: String = ""
+        
         // Foundation move = always good
         if case .foundation = destination {
             if card.rank == .ace {
-                return MoveAnalysis(mood: .praise, comment: aceToFoundationComments.randomElement()!)
+                mood = .praise
+                comment = aceToFoundationComments.randomElement()!
+            } else if card.rank == .king {
+                mood = .brilliant
+                comment = kingToFoundationComments.randomElement()!
+            } else {
+                mood = .praise
+                comment = foundationComments.randomElement()!
             }
-            if card.rank == .king {
-                return MoveAnalysis(mood: .brilliant, comment: kingToFoundationComments.randomElement()!)
-            }
-            return MoveAnalysis(mood: .praise, comment: foundationComments.randomElement()!)
         }
-
         // King to empty tableau = good
-        if case .tableau(let destPile) = destination,
+        else if case .tableau(let destPile) = destination,
            card.rank == .king,
            gameState.tableau[destPile].isEmpty || destPileWasEmpty(destPile, gameState: gameState) {
-            return MoveAnalysis(mood: .praise, comment: kingToEmptyComments.randomElement()!)
+            mood = .praise
+            comment = kingToEmptyComments.randomElement()!
         }
-
-        // Moving a stack that reveals a face-down card = good
-        if case .tableau(let srcPile, let idx) = source, idx > 0 {
+        // Moving from foundation back to tableau = terrible
+        else if case .foundation = source {
+            mood = .terrible
+            comment = foundationToTableauComments.randomElement()!
+        }
+        // Burying a card on a large pile = bad
+        else if case .tableau(let destPile) = destination {
+            if gameState.tableau[destPile].count > 5 {
+                mood = .roast
+                comment = buryComments.randomElement()!
+            }
+        }
+        // Multi-card move (3+)
+        else if cards.count >= 4 {
+            mood = .praise
+            comment = bigStackComments.randomElement()!
+        }
+        
+        // Revealing face-down cards gets a comment sometimes
+        if mood == .neutral, case .tableau(let srcPile, let idx) = source, idx > 0 {
             let cardBelow = gameState.tableau[srcPile][safe: idx - 1]
             if let cardBelow, !cardBelow.isFaceUp {
-                return MoveAnalysis(mood: .praise, comment: revealComments.randomElement()!)
+                mood = .praise
+                comment = revealComments.randomElement()!
             }
         }
-
-        // Burying a card on a large pile = bad
-        if case .tableau(let destPile) = destination {
-            if gameState.tableau[destPile].count > 5 {
-                return MoveAnalysis(mood: .roast, comment: buryComments.randomElement()!)
-            }
+        
+        // SKIP neutral moves entirely - no comment
+        if mood == .neutral {
+            movesSinceLastComment += 1
+            return nil
         }
-
-        // Moving from foundation back to tableau = terrible
-        if case .foundation = source {
-            return MoveAnalysis(mood: .terrible, comment: foundationToTableauComments.randomElement()!)
+        
+        // Apply probability check - don't comment on EVERY notable move
+        let shouldComment: Bool
+        switch mood {
+        case .brilliant:
+            shouldComment = Double.random(in: 0...1) < brilliantChance
+        case .terrible:
+            shouldComment = Double.random(in: 0...1) < terribleChance
+        case .praise:
+            shouldComment = Double.random(in: 0...1) < praiseChance
+        case .roast:
+            shouldComment = Double.random(in: 0...1) < roastChance
+        case .neutral:
+            shouldComment = false
         }
-
-        // Multi-card move
-        if cards.count >= 3 {
-            return MoveAnalysis(mood: .praise, comment: bigStackComments.randomElement()!)
+        
+        guard shouldComment else {
+            movesSinceLastComment += 1
+            return nil
         }
-
-        // Neutral/random
-        let allNeutral = neutralComments + mildRoasts
-        return MoveAnalysis(mood: .neutral, comment: allNeutral.randomElement()!)
+        
+        // Check cooldown - don't spam comments
+        let timeSinceLastComment = Date().timeIntervalSince(lastCommentTime)
+        guard movesSinceLastComment >= minimumMovesBetweenComments ||
+              timeSinceLastComment >= minimumSecondsBetweenComments ||
+              mood == .brilliant || mood == .terrible else {
+            movesSinceLastComment += 1
+            return nil
+        }
+        
+        // We're commenting - reset tracking
+        lastCommentTime = Date()
+        movesSinceLastComment = 0
+        
+        return MoveAnalysis(mood: mood, comment: comment)
     }
 
     private func destPileWasEmpty(_ pile: Int, gameState: GameState) -> Bool {
