@@ -15,6 +15,7 @@ final class GameViewModel: ObservableObject {
 
     let commentator = Commentator()
     let speaker = SpeechManager()
+    let sounds = SoundManager.shared
 
     // MARK: - Private
 
@@ -83,11 +84,13 @@ final class GameViewModel: ObservableObject {
                 return c
             }
             state.waste = []
+            sounds.playCardFlip()
             setCommentary("Recycling the waste pile again? Groundhog Day vibes.", mood: .neutral)
         } else {
             var card = state.stock.removeLast()
             card.isFaceUp = true
             state.waste.append(card)
+            sounds.playDraw()
         }
     }
 
@@ -228,8 +231,10 @@ final class GameViewModel: ObservableObject {
         switch destination {
         case .tableau(let destPile):
             state.tableau[destPile].append(contentsOf: cards)
+            sounds.playCardPlace()
         case .foundation(let destPile):
             state.foundations[destPile].append(contentsOf: cards)
+            sounds.playFoundation()
         }
 
         // Auto-flip newly exposed card
@@ -316,6 +321,7 @@ final class GameViewModel: ObservableObject {
         if totalInFoundation == 52 {
             state.isWon = true
             timer?.cancel()
+            sounds.playWin()
             setCommentary(commentator.winComment(), mood: .praise)
         }
     }
