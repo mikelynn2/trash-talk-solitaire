@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000001 /* TrashTalkSolitaireApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001; };
-		A10000002 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002; };
-		A10000003 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003; };
-		A10000004 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004; };
-		A10000005 /* Commentator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005; };
-		A10000006 /* SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006; };
-		A10000007 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007; };
-		A10000008 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008; };
-		A10000009 /* CommentaryBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009; };
-		A10000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010; };
+		A10000001 /* TrashTalkSolitaireApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001 /* TrashTalkSolitaireApp.swift */; };
+		A10000002 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002 /* Card.swift */; };
+		A10000003 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003 /* GameState.swift */; };
+		A10000004 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004 /* GameViewModel.swift */; };
+		A10000005 /* Commentator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005 /* Commentator.swift */; };
+		A10000006 /* SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006 /* SpeechManager.swift */; };
+		A10000007 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007 /* CardView.swift */; };
+		A10000008 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008 /* GameView.swift */; };
+		A10000009 /* CommentaryBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009 /* CommentaryBubble.swift */; };
+		A10000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -327,7 +327,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 57DX7QJY3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Trash Talk Solitaire";
@@ -358,7 +358,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 57DX7QJY3S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Trash Talk Solitaire";
@@ -404,7 +404,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = A90000001 /* Project object */;
 }
