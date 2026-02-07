@@ -4,14 +4,10 @@ struct CardView: View {
     let card: Card
     var isSelected: Bool = false
     var width: CGFloat = 48
-    var height: CGFloat { width * 1.18 }
+    var height: CGFloat { width * 1.12 }  // Much wider, almost square
     
     @State private var flipped: Bool = false
     @State private var showFace: Bool = false
-    
-    private var isFaceCard: Bool {
-        card.rank == .jack || card.rank == .queen || card.rank == .king
-    }
     
     private var suitColor: Color {
         card.color == .red ? Color.red : Color.black
@@ -29,7 +25,7 @@ struct CardView: View {
         }
         .frame(width: width, height: height)
         .overlay(
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 6)
                 .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 3)
         )
         .shadow(color: .black.opacity(0.4), radius: 2, x: 1, y: 2)
@@ -58,13 +54,13 @@ struct CardView: View {
 
     private var faceUpCard: some View {
         ZStack {
-            // Clean white card
-            RoundedRectangle(cornerRadius: 4)
+            // Clean white card with rounded corners
+            RoundedRectangle(cornerRadius: 6)
                 .fill(Color.white)
             
             // Subtle border
-            RoundedRectangle(cornerRadius: 4)
-                .strokeBorder(Color.gray.opacity(0.4), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(Color.gray.opacity(0.3), lineWidth: 0.5)
 
             cardContent
         }
@@ -72,26 +68,26 @@ struct CardView: View {
     
     private var cardContent: some View {
         VStack(spacing: 0) {
-            // Top left corner - BIG AND BOLD
+            // Top left corner - HUGE rank, smaller suit below
             HStack(alignment: .top) {
-                VStack(alignment: .center, spacing: -3) {
+                VStack(alignment: .center, spacing: -2) {
                     Text(card.rank.display)
-                        .font(.system(size: width * 0.52, weight: .heavy))
+                        .font(.system(size: width * 0.48, weight: .semibold))
                         .minimumScaleFactor(0.5)
                     Text(card.suit.symbol)
-                        .font(.system(size: width * 0.42))
+                        .font(.system(size: width * 0.32))
                 }
                 .foregroundColor(suitColor)
                 Spacer()
             }
-            .padding(.leading, 2)
-            .padding(.top, 1)
+            .padding(.leading, 4)
+            .padding(.top, 2)
 
             Spacer()
 
             // Large center suit
             Text(card.suit.symbol)
-                .font(.system(size: width * 0.8))
+                .font(.system(size: width * 0.85))
                 .foregroundColor(suitColor)
 
             Spacer()
@@ -99,45 +95,52 @@ struct CardView: View {
             // Bottom right corner (inverted)
             HStack(alignment: .bottom) {
                 Spacer()
-                VStack(alignment: .center, spacing: -3) {
+                VStack(alignment: .center, spacing: -2) {
                     Text(card.rank.display)
-                        .font(.system(size: width * 0.52, weight: .heavy))
+                        .font(.system(size: width * 0.48, weight: .semibold))
                         .minimumScaleFactor(0.5)
                     Text(card.suit.symbol)
-                        .font(.system(size: width * 0.42))
+                        .font(.system(size: width * 0.32))
                 }
                 .foregroundColor(suitColor)
                 .rotationEffect(.degrees(180))
             }
-            .padding(.trailing, 2)
-            .padding(.bottom, 1)
+            .padding(.trailing, 4)
+            .padding(.bottom, 2)
         }
     }
 
     private var faceDownCard: some View {
         ZStack {
             // Card base - blue
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color(red: 0.1, green: 0.3, blue: 0.7))
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(red: 0.15, green: 0.35, blue: 0.75))
             
             // White border
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(Color.white, lineWidth: 2)
             
-            // Inner pattern area
-            RoundedRectangle(cornerRadius: 2)
+            // Inner border
+            RoundedRectangle(cornerRadius: 4)
                 .strokeBorder(Color.white.opacity(0.3), lineWidth: 1)
-                .padding(5)
+                .padding(4)
             
-            // Simple pattern
-            VStack(spacing: 6) {
-                ForEach(0..<4, id: \.self) { row in
-                    HStack(spacing: 6) {
-                        ForEach(0..<3, id: \.self) { col in
-                            Image(systemName: "suit.diamond.fill")
-                                .font(.system(size: width * 0.12))
-                                .foregroundColor(.white.opacity(0.2))
-                        }
+            // Diamond pattern
+            GeometryReader { geo in
+                let rows = 5
+                let cols = 4
+                let spacingX = geo.size.width / CGFloat(cols + 1)
+                let spacingY = geo.size.height / CGFloat(rows + 1)
+                
+                ForEach(0..<rows, id: \.self) { row in
+                    ForEach(0..<cols, id: \.self) { col in
+                        Image(systemName: "suit.diamond.fill")
+                            .font(.system(size: width * 0.14))
+                            .foregroundColor(.white.opacity(0.25))
+                            .position(
+                                x: spacingX * CGFloat(col + 1),
+                                y: spacingY * CGFloat(row + 1)
+                            )
                     }
                 }
             }
@@ -148,16 +151,15 @@ struct CardView: View {
 struct EmptyPileView: View {
     var label: String = ""
     var width: CGFloat = 48
-    var height: CGFloat { width * 1.18 }
+    var height: CGFloat { width * 1.12 }
     var isHighlighted: Bool = false
 
     var body: some View {
         ZStack {
-            // Subtle filled background
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 6)
                 .fill(Color.white.opacity(0.08))
             
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(
                     isHighlighted ? Color.yellow : Color.white.opacity(0.35),
                     style: StrokeStyle(lineWidth: isHighlighted ? 2.5 : 1.5, dash: isHighlighted ? [] : [5])
@@ -165,7 +167,7 @@ struct EmptyPileView: View {
             
             if !label.isEmpty {
                 Text(label)
-                    .font(.system(size: width * 0.5, weight: .medium))
+                    .font(.system(size: width * 0.55, weight: .medium))
                     .foregroundColor(.white.opacity(0.4))
             }
         }
