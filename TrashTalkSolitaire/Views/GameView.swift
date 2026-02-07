@@ -6,6 +6,7 @@ struct GameView: View {
     @State private var dragCards: [Card] = []
     @State private var dragSource: MoveSource?
     @State private var dragOffset: CGSize = .zero
+    @State private var dragStartLocation: CGPoint = .zero
     @State private var cardFrames: [UUID: CGRect] = [:]
 
     private let cardWidth: CGFloat = 55
@@ -66,6 +67,11 @@ struct GameView: View {
                     .padding(.horizontal, hPad)
 
                     Spacer()
+                }
+
+                // Dragged cards overlay (renders on top of everything)
+                if !dragCards.isEmpty {
+                    draggedCardsOverlay
                 }
 
                 // Win overlay
@@ -176,8 +182,7 @@ struct GameView: View {
                     .onTapGesture { vm.tapCard(source: .waste) }
                     .onTapGesture(count: 2) { vm.doubleTapCard(source: .waste) }
                     .gesture(dragGesture(for: .waste, cards: [card]))
-                    .zIndex(isBeingDragged(.waste) ? 100 : 0)
-                    .offset(isBeingDragged(.waste) ? dragOffset : .zero)
+                    .opacity(isBeingDragged(.waste) ? 0.0 : 1.0)
             } else {
                 EmptyPileView(width: cardWidth)
             }
@@ -224,9 +229,8 @@ struct GameView: View {
 
                 CardView(card: card, isSelected: isSelected, width: cardWidth)
                     .offset(y: CGFloat(index) * tableauSpacing)
-                    .zIndex(Double(index) + (isPartOfDrag ? 200 : 0))
-                    .offset(isPartOfDrag ? dragOffset : .zero)
-                    .opacity(isPartOfDrag && !isDragging ? 0.9 : 1.0)
+                    .zIndex(Double(index))
+                    .opacity(isPartOfDrag ? 0.0 : 1.0)
                     .onTapGesture(count: 2) {
                         guard card.isFaceUp else { return }
                         vm.doubleTapCard(source: source)
@@ -249,6 +253,7 @@ struct GameView: View {
                 if dragSource == nil {
                     dragSource = source
                     dragCards = cards
+                    dragStartLocation = value.startLocation
                 }
                 dragOffset = value.translation
             }
@@ -259,7 +264,24 @@ struct GameView: View {
                 }
                 dragSource = nil
                 dragCards = []
+                dragStartLocation = .zero
             }
+    }
+
+    // MARK: - Dragged Cards Overlay
+
+    private var draggedCardsOverlay: some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(Array(dragCards.enumerated()), id: \.element.id) { index, card in
+                CardView(card: card, width: cardWidth)
+                    .offset(y: CGFloat(index) * tableauSpacing)
+            }
+        }
+        .position(
+            x: dragStartLocation.x + dragOffset.width,
+            y: dragStartLocation.y + dragOffset.height + CGFloat(dragCards.count - 1) * tableauSpacing / 2
+        )
+        .zIndex(1000)
     }
 
     private func handleDrop(at location: CGPoint) {
