@@ -3,8 +3,8 @@ import SwiftUI
 struct CardView: View {
     let card: Card
     var isSelected: Bool = false
-    var width: CGFloat = 50
-    var height: CGFloat { width * 1.15 }
+    var width: CGFloat = 48
+    var height: CGFloat { width * 1.0 }
     
     @State private var flipped: Bool = false
     @State private var showFace: Bool = false
@@ -240,8 +240,8 @@ struct CardView: View {
 
 struct EmptyPileView: View {
     var label: String = ""
-    var width: CGFloat = 50
-    var height: CGFloat { width * 1.15 }
+    var width: CGFloat = 48
+    var height: CGFloat { width * 1.0 }
     var isHighlighted: Bool = false
 
     var body: some View {
