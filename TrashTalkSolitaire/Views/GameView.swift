@@ -251,7 +251,6 @@ struct GameView: View {
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: cards.count)
-        .frame(height: max(cardHeight, cardHeight + CGFloat(max(0, cards.count - 1)) * tableauSpacing))
     }
 
     // MARK: - Drag & Drop
