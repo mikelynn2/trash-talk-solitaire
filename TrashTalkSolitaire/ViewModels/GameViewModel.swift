@@ -56,6 +56,7 @@ final class GameViewModel: ObservableObject {
 
         startTimer()
         setCommentary("Fresh deck. Try not to embarrass yourself.", mood: .neutral)
+        validateCardCount()
     }
 
     // MARK: - Timer
@@ -92,6 +93,7 @@ final class GameViewModel: ObservableObject {
             state.waste.append(card)
             sounds.playDraw()
         }
+        validateCardCount()
     }
 
     // MARK: - Tap-to-Move
@@ -267,6 +269,7 @@ final class GameViewModel: ObservableObject {
         }
 
         checkWin()
+        validateCardCount()
         return true
     }
 
@@ -310,6 +313,7 @@ final class GameViewModel: ObservableObject {
 
         state.moveCount = max(0, state.moveCount - 1)
         setCommentary("Taking it back? Even YOU know that was bad.", mood: .roast)
+        validateCardCount()
     }
 
     var canUndo: Bool { !undoStack.isEmpty }
@@ -323,6 +327,27 @@ final class GameViewModel: ObservableObject {
             timer?.cancel()
             sounds.playWin()
             setCommentary(commentator.winComment(), mood: .praise)
+        }
+    }
+    
+    // MARK: - Card Count Validation (Debug)
+    
+    func totalCardCount() -> Int {
+        let stockCount = state.stock.count
+        let wasteCount = state.waste.count
+        let tableauCount = state.tableau.reduce(0) { $0 + $1.count }
+        let foundationCount = state.foundations.reduce(0) { $0 + $1.count }
+        return stockCount + wasteCount + tableauCount + foundationCount
+    }
+    
+    func validateCardCount() {
+        let count = totalCardCount()
+        if count != 52 {
+            print("⚠️ CARD COUNT ERROR: \(count) cards (should be 52)")
+            print("  Stock: \(state.stock.count)")
+            print("  Waste: \(state.waste.count)")
+            print("  Tableau: \(state.tableau.map { $0.count })")
+            print("  Foundations: \(state.foundations.map { $0.count })")
         }
     }
 
