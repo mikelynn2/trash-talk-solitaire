@@ -67,30 +67,22 @@ struct CardView: View {
     }
     
     private var cardContent: some View {
-        VStack(spacing: 0) {
-            // Top left: Big rank with tiny suit as superscript
-            HStack(alignment: .top, spacing: 1) {
+        GeometryReader { geo in
+            // Top left: Rank with small suit to the right
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text(card.rank.display)
-                    .font(.system(size: width * 0.45, weight: .bold))
+                    .font(.system(size: width * 0.5, weight: .bold))
                 Text(card.suit.symbol)
-                    .font(.system(size: width * 0.22))
-                    .offset(y: 2)
-                Spacer()
+                    .font(.system(size: width * 0.28))
             }
             .foregroundColor(suitColor)
-            .padding(.leading, 5)
-            .padding(.top, 4)
-
-            Spacer()
-
-            // HUGE center suit
+            .position(x: width * 0.32, y: height * 0.12)
+            
+            // HUGE center suit - positioned in lower half
             Text(card.suit.symbol)
-                .font(.system(size: width * 1.0))
+                .font(.system(size: width * 1.1))
                 .foregroundColor(suitColor)
-                .offset(y: height * 0.05)
-
-            Spacer()
-            Spacer()
+                .position(x: geo.size.width / 2, y: geo.size.height * 0.58)
         }
     }
 
