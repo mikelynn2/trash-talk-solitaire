@@ -141,6 +141,15 @@ struct GameView: View {
 
             Spacer()
 
+            // Hint
+            Button(action: { vm.showHint() }) {
+                Image(systemName: "lightbulb")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.yellow.opacity(0.9))
+            }
+
+            Spacer()
+
             // Auto-complete
             if vm.canAutoComplete {
                 Button(action: { vm.autoComplete() }) {
