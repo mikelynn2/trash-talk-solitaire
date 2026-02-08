@@ -10,6 +10,8 @@ final class GameViewModel: ObservableObject {
     @Published var commentary: String = "Deal the cards. Let's see what you've got."
     @Published var commentaryMood: CommentaryMood = .neutral
     @Published var selectedSource: MoveSource?
+    @Published var hintSource: MoveSource?
+    @Published var hintDestination: MoveDestination?
 
     // MARK: - Dependencies
 
@@ -415,6 +417,122 @@ final class GameViewModel: ObservableObject {
             pile.allSatisfy { $0.isFaceUp }
         }
         return allFaceUp && state.stock.isEmpty
+    }
+
+    // MARK: - Hints
+    
+    func showHint() {
+        guard !state.isWon else { return }
+        
+        // Clear any existing hint
+        hintSource = nil
+        hintDestination = nil
+        
+        if let (source, destination) = findHint() {
+            hintSource = source
+            hintDestination = destination
+            hintCount += 1
+            commentator.recordHint()
+            HapticManager.shared.hint()
+            setCommentary(commentator.hintComment(), mood: .neutral)
+            
+            // Clear hint after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                self?.clearHint()
+            }
+        } else {
+            setCommentary("No moves available. Try drawing from the stock.", mood: .roast)
+        }
+    }
+    
+    func clearHint() {
+        withAnimation {
+            hintSource = nil
+            hintDestination = nil
+        }
+    }
+    
+    private func findHint() -> (MoveSource, MoveDestination)? {
+        // Priority 1: Foundation moves from waste
+        if let card = state.waste.last {
+            for i in 0..<4 {
+                if card.canStackOnFoundation(state.foundations[i].last) &&
+                   (state.foundations[i].isEmpty || state.foundations[i].last?.suit == card.suit) {
+                    return (.waste, .foundation(pile: i))
+                }
+            }
+        }
+        
+        // Priority 2: Foundation moves from tableau
+        for pile in 0..<7 {
+            guard let card = state.tableau[pile].last, card.isFaceUp else { continue }
+            for i in 0..<4 {
+                if card.canStackOnFoundation(state.foundations[i].last) &&
+                   (state.foundations[i].isEmpty || state.foundations[i].last?.suit == card.suit) {
+                    let idx = state.tableau[pile].count - 1
+                    return (.tableau(pile: pile, cardIndex: idx), .foundation(pile: i))
+                }
+            }
+        }
+        
+        // Priority 3: King to empty column
+        for pile in 0..<7 {
+            for (idx, card) in state.tableau[pile].enumerated() {
+                guard card.isFaceUp, card.rank == .king, idx > 0 else { continue }
+                // Find an empty column
+                for destPile in 0..<7 {
+                    if state.tableau[destPile].isEmpty {
+                        return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
+                    }
+                }
+            }
+        }
+        
+        // Priority 4: Tableau to tableau moves that reveal a card
+        for pile in 0..<7 {
+            for (idx, card) in state.tableau[pile].enumerated() {
+                guard card.isFaceUp else { continue }
+                // Check if moving this would reveal a face-down card
+                let wouldReveal = idx > 0 && !state.tableau[pile][idx - 1].isFaceUp
+                
+                for destPile in 0..<7 where destPile != pile {
+                    if let topCard = state.tableau[destPile].last {
+                        if card.canStackOnTableau(topCard) && wouldReveal {
+                            return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Priority 5: Waste to tableau
+        if let card = state.waste.last {
+            for destPile in 0..<7 {
+                if let topCard = state.tableau[destPile].last {
+                    if card.canStackOnTableau(topCard) {
+                        return (.waste, .tableau(pile: destPile))
+                    }
+                } else if card.rank == .king {
+                    return (.waste, .tableau(pile: destPile))
+                }
+            }
+        }
+        
+        // Priority 6: Any valid tableau move
+        for pile in 0..<7 {
+            for (idx, card) in state.tableau[pile].enumerated() {
+                guard card.isFaceUp else { continue }
+                for destPile in 0..<7 where destPile != pile {
+                    if let topCard = state.tableau[destPile].last {
+                        if card.canStackOnTableau(topCard) {
+                            return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
+                        }
+                    }
+                }
+            }
+        }
+        
+        return nil
     }
 
     // MARK: - Commentary
