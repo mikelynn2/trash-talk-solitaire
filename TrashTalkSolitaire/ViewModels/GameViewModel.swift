@@ -161,7 +161,7 @@ final class GameViewModel: ObservableObject {
             }
             state.waste = []
             sounds.playCardFlip()
-            setCommentary("Recycling the waste pile again? Groundhog Day vibes.", mood: .neutral)
+            // No commentary here - let the 2-4 per game limit handle it
         } else {
             // Draw 1 or 3 cards depending on mode
             let drawCount = state.drawThreeMode ? min(3, state.stock.count) : 1
