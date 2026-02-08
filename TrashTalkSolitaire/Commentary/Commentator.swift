@@ -23,6 +23,9 @@ final class Commentator {
     private var hintCount: Int = 0
     private var gameStartTime: Date = Date()
     
+    // Track used comments to avoid repeats within a session
+    private var usedComments: Set<String> = []
+    
     // Probability of commenting even on notable moves (to avoid fatigue)
     private let praiseChance: Double = 0.6      // 60% chance to comment on good moves
     private let roastChance: Double = 0.7       // 70% chance to comment on bad moves
@@ -35,6 +38,24 @@ final class Commentator {
         undoCount = 0
         hintCount = 0
         gameStartTime = Date()
+        usedComments.removeAll()
+    }
+    
+    /// Pick a random comment that hasn't been used this session
+    private func pickUnused(from comments: [String]) -> String {
+        // Find comments we haven't used yet
+        let available = comments.filter { !usedComments.contains($0) }
+        
+        // If all have been used, reset and use any
+        let chosen: String
+        if available.isEmpty {
+            chosen = comments.randomElement()!
+        } else {
+            chosen = available.randomElement()!
+        }
+        
+        usedComments.insert(chosen)
+        return chosen
     }
     
     func recordUndo() {
@@ -63,13 +84,13 @@ final class Commentator {
         if case .foundation = destination {
             if card.rank == .ace {
                 mood = .praise
-                comment = aceToFoundationComments.randomElement()!
+                comment = pickUnused(from: aceToFoundationComments)
             } else if card.rank == .king {
                 mood = .brilliant
-                comment = kingToFoundationComments.randomElement()!
+                comment = pickUnused(from: kingToFoundationComments)
             } else {
                 mood = .praise
-                comment = foundationComments.randomElement()!
+                comment = pickUnused(from: foundationComments)
             }
         }
         // King to empty tableau = good
@@ -77,24 +98,24 @@ final class Commentator {
            card.rank == .king,
            gameState.tableau[destPile].isEmpty || destPileWasEmpty(destPile, gameState: gameState) {
             mood = .praise
-            comment = kingToEmptyComments.randomElement()!
+            comment = pickUnused(from: kingToEmptyComments)
         }
         // Moving from foundation back to tableau = terrible
         else if case .foundation = source {
             mood = .terrible
-            comment = foundationToTableauComments.randomElement()!
+            comment = pickUnused(from: foundationToTableauComments)
         }
         // Burying a card on a large pile = bad
         else if case .tableau(let destPile) = destination {
             if gameState.tableau[destPile].count > 5 {
                 mood = .roast
-                comment = buryComments.randomElement()!
+                comment = pickUnused(from: buryComments)
             }
         }
         // Multi-card move (3+)
         else if cards.count >= 4 {
             mood = .praise
-            comment = bigStackComments.randomElement()!
+            comment = pickUnused(from: bigStackComments)
         }
         
         // Revealing face-down cards gets a comment sometimes
@@ -102,7 +123,7 @@ final class Commentator {
             let cardBelow = gameState.tableau[srcPile][safe: idx - 1]
             if let cardBelow, !cardBelow.isFaceUp {
                 mood = .praise
-                comment = revealComments.randomElement()!
+                comment = pickUnused(from: revealComments)
             }
         }
         
@@ -160,36 +181,36 @@ final class Commentator {
         
         // Fast win (under 3 minutes)
         if gameTime < 180 {
-            return fastWinComments.randomElement()!
+            return pickUnused(from: fastWinComments)
         }
         
         // Slow win (over 10 minutes)
         if gameTime > 600 {
-            return slowWinComments.randomElement()!
+            return pickUnused(from: slowWinComments)
         }
         
         // Won with lots of undos
         if undoCount > 10 {
-            return undoWinComments.randomElement()!
+            return pickUnused(from: undoWinComments)
         }
         
         // Won with lots of hints
         if hintCount > 5 {
-            return hintWinComments.randomElement()!
+            return pickUnused(from: hintWinComments)
         }
         
-        return winComments.randomElement()!
+        return pickUnused(from: winComments)
     }
     
     // MARK: - Hint Comments
     
     func hintComment() -> String {
         if hintCount == 0 {
-            return firstHintComments.randomElement()!
+            return pickUnused(from: firstHintComments)
         } else if hintCount > 5 {
-            return manyHintsComments.randomElement()!
+            return pickUnused(from: manyHintsComments)
         } else {
-            return hintComments.randomElement()!
+            return pickUnused(from: hintComments)
         }
     }
     
@@ -197,9 +218,9 @@ final class Commentator {
     
     func undoComment() -> String {
         if undoCount > 10 {
-            return manyUndoComments.randomElement()!
+            return pickUnused(from: manyUndoComments)
         }
-        return undoComments.randomElement()!
+        return pickUnused(from: undoComments)
     }
     
     // MARK: - Streak Comments
