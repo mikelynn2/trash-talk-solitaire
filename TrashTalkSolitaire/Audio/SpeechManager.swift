@@ -10,6 +10,17 @@ final class SpeechManager: NSObject, ObservableObject {
 
     override init() {
         super.init()
+        setupAudioSession()
+    }
+    
+    private func setupAudioSession() {
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .mixWithOthers])
+            try audioSession.setActive(true)
+        } catch {
+            print("Audio session setup failed: \(error)")
+        }
     }
 
     func speak(_ text: String) {
