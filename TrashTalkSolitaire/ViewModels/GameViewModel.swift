@@ -12,6 +12,9 @@ final class GameViewModel: ObservableObject {
     @Published var selectedSource: MoveSource?
     @Published var hintSource: MoveSource?
     @Published var hintDestination: MoveDestination?
+    @Published var isAutoCompleting: Bool = false
+    @Published var flyingCard: Card?
+    @Published var flyingCardPosition: CGPoint = .zero
 
     // MARK: - Dependencies
 
@@ -48,6 +51,8 @@ final class GameViewModel: ObservableObject {
         selectedSource = nil
         hasRecordedGameEnd = false
         gameStarted = true
+        commentator.resetForNewGame()
+        
         var deck = Card.fullDeck().shuffled()
         var tableau: [[Card]] = Array(repeating: [], count: 7)
 
@@ -66,7 +71,10 @@ final class GameViewModel: ObservableObject {
             waste: [],
             moveCount: 0,
             elapsedSeconds: 0,
-            isWon: false
+            isWon: false,
+            drawThreeMode: UserDefaults.standard.bool(forKey: "drawThreeMode"),
+            vegasMode: UserDefaults.standard.bool(forKey: "vegasMode"),
+            vegasScore: UserDefaults.standard.bool(forKey: "vegasMode") ? -52 : 0
         )
 
         startTimer()
@@ -86,7 +94,7 @@ final class GameViewModel: ObservableObject {
             }
     }
 
-    // MARK: - Stock / Waste
+    // MARK: - Stock / Waste (Draw 1 or Draw 3)
 
     func drawFromStock() {
         guard !state.isWon else { return }
@@ -103,9 +111,15 @@ final class GameViewModel: ObservableObject {
             sounds.playCardFlip()
             setCommentary("Recycling the waste pile again? Groundhog Day vibes.", mood: .neutral)
         } else {
-            var card = state.stock.removeLast()
-            card.isFaceUp = true
-            state.waste.append(card)
+            // Draw 1 or 3 cards depending on mode
+            let drawCount = state.drawThreeMode ? min(3, state.stock.count) : 1
+            
+            for _ in 0..<drawCount {
+                guard !state.stock.isEmpty else { break }
+                var card = state.stock.removeLast()
+                card.isFaceUp = true
+                state.waste.append(card)
+            }
             sounds.playDraw()
         }
         validateCardCount()
@@ -242,6 +256,10 @@ final class GameViewModel: ObservableObject {
             state.tableau[pile].removeSubrange(cardIndex...)
         case .foundation(let pile):
             state.foundations[pile].removeLast()
+            // Vegas: lose $5 for removing from foundation
+            if state.vegasMode {
+                state.vegasScore -= 5
+            }
         }
 
         // Place cards at destination
@@ -252,6 +270,10 @@ final class GameViewModel: ObservableObject {
         case .foundation(let destPile):
             state.foundations[destPile].append(contentsOf: cards)
             sounds.playFoundation()
+            // Vegas: earn $5 for each card to foundation
+            if state.vegasMode {
+                state.vegasScore += 5
+            }
         }
 
         // Auto-flip newly exposed card
@@ -288,7 +310,7 @@ final class GameViewModel: ObservableObject {
         return true
     }
 
-    // MARK: - Undo
+    // MARK: - Undo (with escalating snark)
 
     func undo() {
         guard let move = undoStack.popLast() else {
@@ -314,6 +336,10 @@ final class GameViewModel: ObservableObject {
             state.tableau[pile].removeLast(count)
         case .foundation(let pile):
             state.foundations[pile].removeLast(move.cards.count)
+            // Vegas: undo foundation means we reverse the +$5
+            if state.vegasMode {
+                state.vegasScore -= 5
+            }
         }
 
         // Put cards back at source
@@ -324,11 +350,28 @@ final class GameViewModel: ObservableObject {
             state.tableau[pile].insert(contentsOf: move.cards, at: cardIndex)
         case .foundation(let pile):
             state.foundations[pile].append(contentsOf: move.cards)
+            // Vegas: undo from foundation means we reverse the -$5
+            if state.vegasMode {
+                state.vegasScore += 5
+            }
         }
 
         state.moveCount = max(0, state.moveCount - 1)
         undoCount += 1
-        setCommentary("Taking it back? Even YOU know that was bad.", mood: .roast)
+        commentator.recordUndo()
+        
+        // Escalating undo snark
+        let undoComment: String
+        if undoCount <= 2 {
+            undoComment = "Changed your mind, dear?"
+        } else if undoCount <= 5 {
+            undoComment = ["Again? Commitment issues?", "Make up your mind!", "Indecisive much?"].randomElement()!
+        } else if undoCount <= 10 {
+            undoComment = ["At this point, just start over...", "The undo button is getting worn out!", "This is more undo than do."].randomElement()!
+        } else {
+            undoComment = ["I've lost count of your undos. Impressive, in a sad way.", "You've undone so much, we're practically back at the start.", "The undo button is filing for overtime pay."].randomElement()!
+        }
+        setCommentary(undoComment, mood: .roast)
         validateCardCount()
     }
 
@@ -342,9 +385,15 @@ final class GameViewModel: ObservableObject {
             state.isWon = true
             timer?.cancel()
             sounds.playWin()
+            HapticManager.shared.win()
             if !hasRecordedGameEnd {
                 hasRecordedGameEnd = true
-                stats.recordWin(time: state.elapsedSeconds)
+                stats.recordWin(
+                    time: state.elapsedSeconds,
+                    undoCount: undoCount,
+                    hintCount: hintCount,
+                    vegasScore: state.vegasMode ? state.vegasScore : 0
+                )
             }
             setCommentary(commentator.winComment(), mood: .praise)
         }
@@ -371,30 +420,41 @@ final class GameViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Auto-Complete
+    // MARK: - Auto-Complete (Animated)
 
     func autoComplete() {
-        guard canAutoComplete else { return }
-
-        // Move all remaining face-up tableau/waste cards to foundations
-        var madeMove = true
-        while madeMove {
-            madeMove = false
-
-            // Try waste
-            if let card = state.waste.last {
-                for i in 0..<4 {
-                    if card.canStackOnFoundation(state.foundations[i].last) &&
-                       (state.foundations[i].isEmpty || state.foundations[i].last?.suit == card.suit) {
-                        _ = executeMove(from: .waste, to: .foundation(pile: i))
-                        madeMove = true
-                        break
-                    }
+        guard canAutoComplete, !isAutoCompleting else { return }
+        
+        isAutoCompleting = true
+        setCommentary("Let me finish this for you...", mood: .neutral)
+        
+        // Perform auto-complete with animation delays
+        autoCompleteStep()
+    }
+    
+    private func autoCompleteStep() {
+        guard !state.isWon else {
+            isAutoCompleting = false
+            return
+        }
+        
+        var madeMove = false
+        
+        // Try waste first
+        if let card = state.waste.last {
+            for i in 0..<4 {
+                if card.canStackOnFoundation(state.foundations[i].last) &&
+                   (state.foundations[i].isEmpty || state.foundations[i].last?.suit == card.suit) {
+                    _ = executeMove(from: .waste, to: .foundation(pile: i))
+                    madeMove = true
+                    break
                 }
             }
-
-            // Try tableau
-            for pile in 0..<7 {
+        }
+        
+        // Try tableau if waste didn't work
+        if !madeMove {
+            outerLoop: for pile in 0..<7 {
                 guard let card = state.tableau[pile].last else { continue }
                 for i in 0..<4 {
                     if card.canStackOnFoundation(state.foundations[i].last) &&
@@ -402,16 +462,25 @@ final class GameViewModel: ObservableObject {
                         let idx = state.tableau[pile].count - 1
                         if executeMove(from: .tableau(pile: pile, cardIndex: idx), to: .foundation(pile: i)) {
                             madeMove = true
-                            break
+                            break outerLoop
                         }
                     }
                 }
-                if madeMove { break }
             }
+        }
+        
+        if madeMove && !state.isWon {
+            // Schedule next step with animation delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+                self?.autoCompleteStep()
+            }
+        } else {
+            isAutoCompleting = false
         }
     }
 
     var canAutoComplete: Bool {
+        guard !isAutoCompleting else { return false }
         // All cards must be face-up and stock/waste empty (or all face-up)
         let allFaceUp = state.tableau.allSatisfy { pile in
             pile.allSatisfy { $0.isFaceUp }
@@ -545,11 +614,43 @@ final class GameViewModel: ObservableObject {
         speaker.speak(text)
     }
 
+    // MARK: - Settings
+    
+    func toggleDrawThreeMode() {
+        state.drawThreeMode.toggle()
+        UserDefaults.standard.set(state.drawThreeMode, forKey: "drawThreeMode")
+        if state.drawThreeMode {
+            setCommentary("Draw 3 mode. Feeling brave today?", mood: .neutral)
+        } else {
+            setCommentary("Back to easy mode. No judgment.", mood: .neutral)
+        }
+    }
+    
+    func toggleVegasMode() {
+        state.vegasMode.toggle()
+        UserDefaults.standard.set(state.vegasMode, forKey: "vegasMode")
+        if state.vegasMode {
+            state.vegasScore = -52
+            setCommentary("Vegas mode! Don't gamble what you can't afford to lose.", mood: .neutral)
+        } else {
+            state.vegasScore = 0
+            setCommentary("Leaving Vegas. Probably wise.", mood: .neutral)
+        }
+    }
+
     // MARK: - Formatted Time
 
     var formattedTime: String {
         let m = state.elapsedSeconds / 60
         let s = state.elapsedSeconds % 60
         return String(format: "%d:%02d", m, s)
+    }
+    
+    var formattedVegasScore: String {
+        if state.vegasScore >= 0 {
+            return "+$\(state.vegasScore)"
+        } else {
+            return "-$\(abs(state.vegasScore))"
+        }
     }
 }
