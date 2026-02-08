@@ -69,6 +69,24 @@ struct GameView: View {
                     .padding(.horizontal, hPad)
 
                     Spacer()
+                    
+                    // Vegas cumulative earnings (bottom bar)
+                    if vm.state.vegasMode {
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Text("Lifetime:")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white.opacity(0.6))
+                                Text(vm.stats.formattedVegasCumulative)
+                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                    .foregroundColor(vm.stats.vegasCumulative >= 0 ? .green : .red)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
+                        .background(Color.black.opacity(0.3))
+                    }
                 }
 
                 // Dragged cards overlay (renders on top of everything)
