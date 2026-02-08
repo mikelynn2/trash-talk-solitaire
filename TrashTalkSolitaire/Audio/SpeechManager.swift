@@ -32,51 +32,51 @@ final class SpeechManager: NSObject, ObservableObject {
         }
 
         let utterance = AVSpeechUtterance(string: text)
-        utterance.rate = speechRate
-        utterance.pitchMultiplier = 1.15  // Slightly higher, grandmother-ish
-        utterance.preUtteranceDelay = 0.3
-        utterance.postUtteranceDelay = 0.2
-        utterance.volume = 0.9
+        
+        // Grandma pacing - slower, more deliberate
+        utterance.rate = 0.38  // Slower than default (0.5)
+        utterance.pitchMultiplier = 0.95  // Slightly lower for older voice
+        utterance.preUtteranceDelay = 0.2
+        utterance.postUtteranceDelay = 0.3
+        utterance.volume = 1.0
 
-        // British grandmother voice - try premium voices first
-        // Kate and Serena are British female voices
-        let britishVoiceIDs = [
-            "com.apple.voice.premium.en-GB.Kate",      // Premium Kate (best)
-            "com.apple.voice.enhanced.en-GB.Kate",     // Enhanced Kate
-            "com.apple.ttsbundle.Kate-premium",        // Alt premium
-            "com.apple.voice.premium.en-GB.Serena",    // Premium Serena
-            "com.apple.voice.enhanced.en-GB.Serena",   // Enhanced Serena
-            "com.apple.ttsbundle.Serena-premium",      // Alt premium
-            "com.apple.voice.compact.en-GB.Kate",      // Compact Kate
-            "com.apple.voice.compact.en-GB.Serena"     // Compact Serena
-        ]
-        
-        var selectedVoice: AVSpeechSynthesisVoice?
-        
-        // Try each British voice in preference order
-        for voiceID in britishVoiceIDs {
-            if let voice = AVSpeechSynthesisVoice(identifier: voiceID) {
-                selectedVoice = voice
-                break
-            }
-        }
-        
-        // Fallback: find any British English female voice
-        if selectedVoice == nil {
-            let allVoices = AVSpeechSynthesisVoice.speechVoices()
-            selectedVoice = allVoices.first { voice in
-                voice.language.starts(with: "en-GB")
-            }
-        }
-        
-        // Last resort: any British voice
-        if selectedVoice == nil {
-            selectedVoice = AVSpeechSynthesisVoice(language: "en-GB")
-        }
-        
+        // Find the best available British female voice
+        // Premium/Enhanced voices sound MUCH better but must be downloaded
+        // Settings > Accessibility > Spoken Content > Voices > English (UK)
+        let selectedVoice = findBestBritishVoice()
         utterance.voice = selectedVoice
+        
+        // Log which voice we're using (for debugging)
+        if let voice = selectedVoice {
+            print("🎙️ Using voice: \(voice.name) (\(voice.quality.rawValue))")
+        }
 
         synthesizer.speak(utterance)
+    }
+    
+    private func findBestBritishVoice() -> AVSpeechSynthesisVoice? {
+        let allVoices = AVSpeechSynthesisVoice.speechVoices()
+        
+        // Filter to British English voices
+        let britishVoices = allVoices.filter { $0.language.starts(with: "en-GB") }
+        
+        // Sort by quality (premium > enhanced > default > compact)
+        let sortedVoices = britishVoices.sorted { v1, v2 in
+            v1.quality.rawValue > v2.quality.rawValue
+        }
+        
+        // Prefer female voices (Kate, Serena, Stephanie, etc.)
+        let femaleNames = ["Kate", "Serena", "Stephanie", "Fiona", "Moira"]
+        
+        // Try to find a high-quality female voice
+        for voice in sortedVoices {
+            if femaleNames.contains(where: { voice.name.contains($0) }) {
+                return voice
+            }
+        }
+        
+        // Fall back to any British voice
+        return sortedVoices.first ?? AVSpeechSynthesisVoice(language: "en-GB")
     }
 
     func stopSpeaking() {
