@@ -451,40 +451,52 @@ struct GameView: View {
 
     private var settingsSheet: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                // Mute toggle
-                Toggle(isOn: Binding(
-                    get: { vm.speaker.isMuted },
-                    set: { _ in vm.speaker.toggleMute() }
-                )) {
-                    Label("Mute Commentary", systemImage: vm.speaker.isMuted ? "speaker.slash" : "speaker.wave.2")
-                }
-
-                // Speech rate
-                VStack(alignment: .leading) {
-                    Text("Speech Rate")
-                        .font(.headline)
-                    Slider(
-                        value: Binding(
-                            get: { vm.speaker.speechRate },
-                            set: { vm.speaker.speechRate = $0 }
-                        ),
-                        in: 0.3...0.7,
-                        step: 0.05
-                    )
-                    HStack {
-                        Text("Slow")
-                            .font(.caption)
-                        Spacer()
-                        Text("Fast")
-                            .font(.caption)
+            List {
+                // MARK: Audio Settings
+                Section("Audio") {
+                    Toggle(isOn: Binding(
+                        get: { vm.speaker.isMuted },
+                        set: { _ in vm.speaker.toggleMute() }
+                    )) {
+                        Label("Mute Commentary", systemImage: vm.speaker.isMuted ? "speaker.slash" : "speaker.wave.2")
                     }
-                    .foregroundColor(.secondary)
+
+                    VStack(alignment: .leading) {
+                        Text("Speech Rate")
+                            .font(.subheadline)
+                        Slider(
+                            value: Binding(
+                                get: { vm.speaker.speechRate },
+                                set: { vm.speaker.speechRate = $0 }
+                            ),
+                            in: 0.3...0.7,
+                            step: 0.05
+                        )
+                        HStack {
+                            Text("Slow").font(.caption)
+                            Spacer()
+                            Text("Fast").font(.caption)
+                        }
+                        .foregroundColor(.secondary)
+                    }
                 }
 
-                Spacer()
+                // MARK: Stats
+                Section("Statistics") {
+                    statsRow(icon: "gamecontroller.fill", color: .blue, label: "Games Played", value: "\(vm.stats.gamesPlayed)")
+                    statsRow(icon: "trophy.fill", color: .yellow, label: "Games Won", value: "\(vm.stats.gamesWon)")
+                    statsRow(icon: "percent", color: .green, label: "Win Rate", value: String(format: "%.0f%%", vm.stats.winPercentage))
+                    statsRow(icon: "bolt.fill", color: .orange, label: "Best Time", value: vm.stats.formattedBestTime)
+                    statsRow(icon: "flame.fill", color: .red, label: "Current Streak", value: "\(vm.stats.currentStreak)")
+                    statsRow(icon: "star.fill", color: .purple, label: "Longest Streak", value: "\(vm.stats.longestStreak)")
+
+                    Button(role: .destructive) {
+                        vm.stats.resetStats()
+                    } label: {
+                        Label("Reset Stats", systemImage: "trash")
+                    }
+                }
             }
-            .padding()
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -492,6 +504,19 @@ struct GameView: View {
                     Button("Done") { showSettings = false }
                 }
             }
+        }
+    }
+
+    private func statsRow(icon: String, color: Color, label: String, value: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(color)
+                .frame(width: 24)
+            Text(label)
+            Spacer()
+            Text(value)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
         }
     }
 }

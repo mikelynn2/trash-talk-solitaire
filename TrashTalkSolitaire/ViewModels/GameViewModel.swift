@@ -16,11 +16,16 @@ final class GameViewModel: ObservableObject {
     let commentator = Commentator()
     let speaker = SpeechManager()
     let sounds = SoundManager.shared
+    let stats = StatsManager.shared
 
     // MARK: - Private
 
     private var undoStack: [Move] = []
+    private var undoCount: Int = 0
+    private var hintCount: Int = 0
     private var timer: AnyCancellable?
+    private var hasRecordedGameEnd = false
+    private var gameStarted = false
 
     // MARK: - Init
 
@@ -31,8 +36,16 @@ final class GameViewModel: ObservableObject {
     // MARK: - Deal
 
     func deal() {
+        // Record loss for previous game if it was in progress
+        if gameStarted && !hasRecordedGameEnd {
+            stats.recordLoss()
+        }
         undoStack.removeAll()
+        undoCount = 0
+        hintCount = 0
         selectedSource = nil
+        hasRecordedGameEnd = false
+        gameStarted = true
         var deck = Card.fullDeck().shuffled()
         var tableau: [[Card]] = Array(repeating: [], count: 7)
 
@@ -312,6 +325,7 @@ final class GameViewModel: ObservableObject {
         }
 
         state.moveCount = max(0, state.moveCount - 1)
+        undoCount += 1
         setCommentary("Taking it back? Even YOU know that was bad.", mood: .roast)
         validateCardCount()
     }
@@ -326,6 +340,10 @@ final class GameViewModel: ObservableObject {
             state.isWon = true
             timer?.cancel()
             sounds.playWin()
+            if !hasRecordedGameEnd {
+                hasRecordedGameEnd = true
+                stats.recordWin(time: state.elapsedSeconds)
+            }
             setCommentary(commentator.winComment(), mood: .praise)
         }
     }
