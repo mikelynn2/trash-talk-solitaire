@@ -53,18 +53,52 @@
 
 ---
 
-## 📋 Backlog (No Backend Required)
+## 💡 Ideas Backlog (No Backend Required)
 
+### Gameplay Modes
+- [ ] Spider Solitaire mode (same butler)
+- [ ] FreeCell mode
+- [ ] Undo limit mode (only 3 undos per game)
+- [ ] Timed mode (beat the clock, butler gets anxious)
+- [ ] Challenge mode (pre-set "impossible" deals to solve)
+
+### Polish & Animation
+- [ ] Auto-complete fly animation (cards swoosh to foundation)
 - [ ] Landscape mode
-- [ ] iPad layout
+- [ ] iPad optimized layout
+- [ ] Game history / replay past wins
+
+### Monetization
+- [ ] Tip jar (one-time IAP, "buy the butler a drink")
+- [ ] Cosmetic packs (card backs, felt colors)
+- [ ] Pro unlock (if ads added later)
+
+### Stats & Progress
+- [ ] Detailed stats (win rate by difficulty, avg time, graphs)
+- [ ] Personal bests (fastest win, highest Vegas score)
+- [ ] Share win card (screenshot-friendly summary)
+
+### Butler & Personality
+- [ ] Butler moods (gets grumpier on losing streaks)
+- [ ] Easter egg comments (secret lines for weird plays)
+- [ ] More voice options (posh, cockney, drill sergeant, valley girl)
+- [ ] Custom voice pitch/speed slider
+
+### Customization
+- [ ] Dark/light themes (different felt colors)
+- [ ] Card back designs (unlock via milestones)
+- [ ] Butler outfits/avatars
+
+### Accessibility
+- [ ] Large card mode (for visibility)
+- [ ] High contrast / colorblind suits (patterns)
+- [ ] Subtitles mode (show butler text without TTS)
+- [ ] Left-handed mode (flip layout)
+
+### Platform
 - [ ] Apple Watch widget (stats display)
 - [ ] Siri shortcuts ("Start a solitaire game")
-- [ ] Replay last game
-- [ ] Colorblind mode (suit patterns)
-- [ ] Left-handed mode (flip layout)
-- [ ] More butler personas (drill sergeant, etc.)
-- [ ] Auto-complete fly animation
-- [ ] Game history view
+- [ ] Home screen widget
 
 ---
 
