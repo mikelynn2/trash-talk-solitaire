@@ -72,20 +72,7 @@ struct GameView: View {
                     
                     // Vegas cumulative earnings (bottom bar)
                     if vm.state.vegasMode {
-                        HStack {
-                            Spacer()
-                            HStack(spacing: 6) {
-                                Text("Lifetime:")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.white.opacity(0.6))
-                                Text(vm.stats.formattedVegasCumulative)
-                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                    .foregroundColor(vm.stats.vegasCumulative >= 0 ? .green : .red)
-                            }
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                        .background(Color.black.opacity(0.3))
+                        VegasBankrollView(amount: vm.stats.vegasCumulative)
                     }
                 }
 
@@ -1174,4 +1161,132 @@ struct ConfettiParticle {
     let wobbleAmount: CGFloat
     let rotationSpeed: Double
     let createdAt: TimeInterval
+}
+
+// MARK: - Vegas Bankroll View
+
+struct VegasBankrollView: View {
+    let amount: Int
+    @State private var isAnimating = false
+    @State private var shimmerOffset: CGFloat = -200
+    
+    private var isWinning: Bool { amount > 0 }
+    private var isHot: Bool { amount >= 100 }
+    private var isOnFire: Bool { amount >= 500 }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Icon with animation
+            ZStack {
+                if isOnFire {
+                    // Fire effect for big winners
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.orange)
+                        .opacity(isAnimating ? 0.5 : 1)
+                        .scaleEffect(isAnimating ? 1.2 : 1.0)
+                }
+                
+                Image(systemName: isWinning ? "dollarsign.circle.fill" : "dollarsign.circle")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(isWinning ? .yellow : .gray)
+                    .shadow(color: isWinning ? .yellow.opacity(0.5) : .clear, radius: isAnimating ? 8 : 4)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("LIFETIME BANKROLL")
+                    .font(.system(size: 9, weight: .bold))
+                    .tracking(1.5)
+                    .foregroundColor(.white.opacity(0.5))
+                
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text(amount >= 0 ? "+$" : "-$")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(isWinning ? .green : .red)
+                    
+                    Text("\(abs(amount))")
+                        .font(.system(size: 28, weight: .black, design: .rounded))
+                        .foregroundColor(isWinning ? .green : .red)
+                        .shadow(color: isWinning ? .green.opacity(0.3) : .red.opacity(0.3), radius: 4)
+                    
+                    if isHot {
+                        Text(" 🔥")
+                            .font(.system(size: 18))
+                            .scaleEffect(isAnimating ? 1.1 : 0.9)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            // Status badge
+            if isOnFire {
+                Text("ON FIRE!")
+                    .font(.system(size: 10, weight: .black))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(LinearGradient(
+                                colors: [.yellow, .orange],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                    )
+                    .scaleEffect(isAnimating ? 1.05 : 0.95)
+            } else if isHot {
+                Text("HOT")
+                    .font(.system(size: 10, weight: .black))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.green))
+            } else if amount < -100 {
+                Text("COLD")
+                    .font(.system(size: 10, weight: .black))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.blue))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            ZStack {
+                // Base gradient
+                LinearGradient(
+                    colors: isWinning 
+                        ? [Color.green.opacity(0.2), Color.black.opacity(0.4)]
+                        : [Color.red.opacity(0.15), Color.black.opacity(0.4)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                
+                // Shimmer effect for winners
+                if isWinning {
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.clear, .white.opacity(0.1), .clear],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .offset(x: shimmerOffset)
+                }
+            }
+        )
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                isAnimating = true
+            }
+            if isWinning {
+                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                    shimmerOffset = 400
+                }
+            }
+        }
+    }
 }
