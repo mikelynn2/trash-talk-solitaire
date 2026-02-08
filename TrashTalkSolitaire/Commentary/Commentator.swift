@@ -29,12 +29,14 @@ final class Commentator {
     // Hard limit: 2-4 comments per hand
     private var commentsThisGame: Int = 0
     private var maxCommentsThisGame: Int = 3  // Set randomly each game
+    private var totalMovesThisGame: Int = 0
+    private let minimumMovesBeforeFirstComment = 8  // Let player settle in
     
     // Probability of commenting even on notable moves (to avoid fatigue)
-    private let praiseChance: Double = 0.50     // Higher chance since we have hard limit now
-    private let roastChance: Double = 0.50
-    private let brilliantChance: Double = 0.70
-    private let terribleChance: Double = 0.70
+    private let praiseChance: Double = 0.35
+    private let roastChance: Double = 0.35
+    private let brilliantChance: Double = 0.60
+    private let terribleChance: Double = 0.60
 
     // MARK: - Game State Tracking
     
@@ -45,6 +47,7 @@ final class Commentator {
         usedComments.removeAll()
         commentsThisGame = 0
         maxCommentsThisGame = Int.random(in: 2...4)  // 2-4 comments per hand
+        totalMovesThisGame = 0
     }
     
     /// Pick a random comment that hasn't been used this session
@@ -80,6 +83,7 @@ final class Commentator {
         destination: MoveDestination,
         gameState: GameState
     ) -> MoveAnalysis? {
+        totalMovesThisGame += 1
         let card = cards.first!
 
         // Determine mood and comment based on move type
@@ -165,6 +169,11 @@ final class Commentator {
               timeSinceLastComment >= minimumSecondsBetweenComments ||
               mood == .brilliant || mood == .terrible else {
             movesSinceLastComment += 1
+            return nil
+        }
+        
+        // Don't comment too early - let player settle in
+        guard totalMovesThisGame >= minimumMovesBeforeFirstComment else {
             return nil
         }
         

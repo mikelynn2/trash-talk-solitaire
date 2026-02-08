@@ -80,7 +80,8 @@ final class GameViewModel: ObservableObject {
         )
 
         startTimer()
-        setCommentary("Fresh deck. Try not to embarrass yourself.", mood: .neutral)
+        // No opening comment - let the butler stay quiet until something notable happens
+        commentary = ""
         validateCardCount()
     }
     
