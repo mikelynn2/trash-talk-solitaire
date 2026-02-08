@@ -6,130 +6,104 @@
 
 ---
 
-## ✅ Shipped (v1.0)
+## ✅ Shipped (v1.0 + v1.1)
 
+### Core Game
 - [x] Full Klondike solitaire engine
-- [x] AI commentator with 80+ lines (roasts, praise, situational)
-- [x] British butler TTS voice
-- [x] Sound effects + haptics
 - [x] Smooth card animations + 3D flip
-- [x] Stats tracking (games, wins, streaks, best time)
-- [x] Hints system with auto-clear
-- [x] Epic win screen (confetti, sparkles, trophy)
 - [x] Flick gestures + smart drop zones
+- [x] Hints system with visual highlighting
+- [x] Auto-complete when all cards face-up
+- [x] Epic win screen (confetti, sparkles, trophy)
+- [x] Sound effects + haptics
 - [x] Splash screen ("Mike loves Angie")
 
+### Butler Commentary
+- [x] British butler persona (80+ lines)
+- [x] British male TTS voice (Daniel)
+- [x] 2-4 comments per hand (hard limit)
+- [x] Situational comments (wins, hints, undos, streaks)
+- [x] Undo snark escalation (tracks count, gets meaner)
+
+### Draw Modes
+- [x] Draw 1 / Draw 3 toggle
+- [x] Quick-switch badge on stock pile (×1/×3)
+- [x] Switch mid-game anytime
+- [x] Fan 3 waste cards visually
+
+### Vegas Scoring
+- [x] -$52 buy-in, +$5 per foundation card
+- [x] Max payout: +$208 per game
+- [x] Cumulative lifetime bankroll
+- [x] -$52 penalty for abandoning game
+- [x] Animated bankroll display (HOT/ON FIRE badges)
+- [x] Vegas mode ON by default
+
+### Difficulty System
+- [x] Easy / Medium / Hard deck deals
+- [x] Easy: Aces & low cards accessible
+- [x] Hard: Aces buried, colors clumped
+- [x] Settings toggle with descriptions
+
+### Quality of Life
+- [x] No moves detection + alert
+- [x] Stats tracking (games, wins, streaks, best time)
+- [x] Achievements system (10 achievements)
+- [x] Achievements gallery view
+
 ---
 
-## 🚧 Phase 1: Quick Wins (v1.1)
+## 🚧 Phase 2: Polish (v1.2)
 
-### 1. Auto-Complete Fly Animation
-- [ ] Cards swoosh to foundations one-by-one (0.15s delay each)
-- [ ] Arc trajectory with scale-down during flight
+### Auto-Complete Fly Animation
+- [ ] Cards swoosh to foundations one-by-one
+- [ ] Arc trajectory with scale-down
 - [ ] Landing "pop" effect + sound
-- [ ] Butler: "Finally, let me finish this for you..."
-- [ ] Disable interaction during animation
+- [ ] Butler: "Allow me to finish this, sir..."
 
-### 2. Undo Snark Escalation
-- [ ] Track undo count per game
-- [ ] Escalating commentary:
-  - 1-2: "Changed your mind, dear?"
-  - 3-5: "Again? Commitment issues?"
-  - 6+: "At this point, just start over..."
-- [ ] Show undo count in stats
-
-### 3. Draw 3 Mode
-- [ ] Settings toggle: Draw 1 / Draw 3
-- [ ] Fan 3 waste cards visually (offset stack)
-- [ ] Only top card playable
-- [ ] Persist preference in UserDefaults
-- [ ] Butler: "Oh, feeling brave today?"
-
----
-
-## 🎯 Phase 2: Engagement (v1.2)
-
-### 4. Vegas Scoring Mode
-- [ ] Start at -$52, earn +$5 per foundation card
-- [ ] Max payout: $260 - $52 = +$208
-- [ ] Optional cumulative bankroll across games
-- [ ] Show profit/loss on win screen
-- [ ] Butler comments on gambling habits
-
-### 5. Achievements System
+### More Achievements
 | Achievement | Requirement |
 |-------------|-------------|
-| Speed Demon | Win in under 2 minutes |
-| Lightning Round | Win in under 60 seconds |
-| Perfectionist | Win without undo |
-| No Hints Needed | Win without hints |
-| Streak Master | 5 game win streak |
-| Unstoppable | 10 game win streak |
-| Century Club | Play 100 games |
-| Card Shark | Win 50 games |
-| High Roller | Reach +$1000 (Vegas mode) |
-| Butler's Favorite | Win 10 games in one day |
-
-- [ ] Achievement unlock animation + butler praise
-- [ ] Achievements gallery view
-- [ ] Persist in UserDefaults
+| Comeback King | Win after using 10+ undos |
+| Iron Will | Win on Hard difficulty |
+| Whale | Reach +$5000 lifetime (Vegas) |
+| Cold Streak | Lose 5 games in a row |
 
 ---
 
 ## 🚀 Phase 3: Social (v1.3+)
 
-### 7. Daily Challenge
+### Daily Challenge
 - [ ] Same shuffled deck for all players (seeded by date)
 - [ ] Global leaderboard (moves, time)
 - [ ] "Challenge a friend" share link
 - [ ] Special daily badge/streak
-- [ ] Requires backend (CloudKit or Firebase)
 
-### 8. Difficulty Analysis
-- [ ] Score game difficulty post-win (easy/medium/hard/impossible)
-- [ ] Track personal "clutch wins" (games you almost lost)
-- [ ] Show difficulty in stats history
-- [ ] "That was a tough one!" commentary
-
-### 9. Multiplayer Race
+### Multiplayer Race
 - [ ] Real-time head-to-head (same deal)
 - [ ] See opponent's progress bar
-- [ ] First to complete wins
 - [ ] Butler trash talks opponent too
-- [ ] Requires Game Center or custom backend
 
 ---
 
-## 📋 Backlog (Nice to Have)
+## 📋 Backlog
 
-- [ ] Landscape mode support
-- [ ] iPad optimized layout
-- [ ] Apple Watch complication (current streak)
-- [ ] Siri shortcuts ("Start a solitaire game")
-- [ ] Widget showing stats
+- [ ] Landscape mode
+- [ ] iPad layout
+- [ ] Apple Watch widget
+- [ ] Siri shortcuts
 - [ ] Replay last game
-- [ ] Colorblind accessibility (suit patterns)
-- [ ] Left-handed mode (flip layout)
-- [ ] Custom butler voice pitch/speed
-- [ ] More butler personas (drill sergeant, valley girl, etc.)
+- [ ] Colorblind mode (suit patterns)
+- [ ] Left-handed mode
+- [ ] More butler personas
 
 ---
 
 ## 🐛 Known Bugs
 
-- [ ] Missing cards (50 instead of 52) — debug logging added, needs investigation
-- [ ] Occasional card count drift during long sessions
+- [x] ~~Card count drift~~ (fixed with validation)
+- [ ] None currently known
 
 ---
 
-## Build Priority (Next Up)
-
-1. **Auto-Complete Fly Animation** — most visible polish
-2. **Draw 3 Mode** — classic feature people expect
-3. **Undo Snark Escalation** — quick win, more personality
-4. **Vegas Scoring** — adds replayability
-5. **Achievements** — long-term engagement
-
----
-
-*Last updated: Feb 7, 2026*
+*Last updated: Feb 8, 2026*
