@@ -15,8 +15,8 @@ final class Commentator {
     
     private var lastCommentTime: Date = .distantPast
     private var movesSinceLastComment: Int = 0
-    private let minimumMovesBetweenComments = 2
-    private let minimumSecondsBetweenComments: TimeInterval = 4.0
+    private let minimumMovesBetweenComments = 5
+    private let minimumSecondsBetweenComments: TimeInterval = 10.0
     
     // Track game state for situational comments
     private var undoCount: Int = 0
@@ -27,10 +27,10 @@ final class Commentator {
     private var usedComments: Set<String> = []
     
     // Probability of commenting even on notable moves (to avoid fatigue)
-    private let praiseChance: Double = 0.6      // 60% chance to comment on good moves
-    private let roastChance: Double = 0.7       // 70% chance to comment on bad moves
-    private let brilliantChance: Double = 0.95  // 95% chance for brilliant moves
-    private let terribleChance: Double = 0.95   // 95% chance for terrible moves
+    private let praiseChance: Double = 0.12     // 12% chance to comment on good moves (was 60%)
+    private let roastChance: Double = 0.14      // 14% chance to comment on bad moves (was 70%)
+    private let brilliantChance: Double = 0.20  // 20% chance for brilliant moves (was 95%)
+    private let terribleChance: Double = 0.20   // 20% chance for terrible moves (was 95%)
 
     // MARK: - Game State Tracking
     
