@@ -7,31 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4348D98C2F383F4800BE3055 /* StatsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4348D98B2F383F4800BE3055 /* StatsManager.swift */; };
+		4348D98E2F383F5C00BE3055 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4348D98D2F383F5C00BE3055 /* HapticManager.swift */; };
 		A10000001 /* TrashTalkSolitaireApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001 /* TrashTalkSolitaireApp.swift */; };
 		A10000002 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002 /* Card.swift */; };
 		A10000003 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003 /* GameState.swift */; };
 		A10000004 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004 /* GameViewModel.swift */; };
 		A10000005 /* Commentator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005 /* Commentator.swift */; };
 		A10000006 /* SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006 /* SpeechManager.swift */; };
-		A10000017 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017 /* SoundManager.swift */; };
 		A10000007 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007 /* CardView.swift */; };
 		A10000008 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008 /* GameView.swift */; };
 		A10000009 /* CommentaryBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009 /* CommentaryBubble.swift */; };
 		A10000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000010 /* Assets.xcassets */; };
+		A10000017 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017 /* SoundManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4348D98B2F383F4800BE3055 /* StatsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsManager.swift; sourceTree = "<group>"; };
+		4348D98D2F383F5C00BE3055 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		A20000001 /* TrashTalkSolitaireApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrashTalkSolitaireApp.swift; sourceTree = "<group>"; };
 		A20000002 /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		A20000003 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		A20000004 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
 		A20000005 /* Commentator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commentator.swift; sourceTree = "<group>"; };
 		A20000006 /* SpeechManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechManager.swift; sourceTree = "<group>"; };
-		A20000017 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		A20000007 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		A20000008 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		A20000009 /* CommentaryBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentaryBubble.swift; sourceTree = "<group>"; };
 		A20000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000017 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		A30000001 /* TrashTalkSolitaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrashTalkSolitaire.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -71,6 +75,7 @@
 		A50000003 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				4348D98B2F383F4800BE3055 /* StatsManager.swift */,
 				A20000002 /* Card.swift */,
 				A20000003 /* GameState.swift */,
 			);
@@ -114,6 +119,7 @@
 		A50000008 /* Audio */ = {
 			isa = PBXGroup;
 			children = (
+				4348D98D2F383F5C00BE3055 /* HapticManager.swift */,
 				A20000006 /* SpeechManager.swift */,
 				A20000017 /* SoundManager.swift */,
 			);
@@ -191,6 +197,7 @@
 			files = (
 				A10000001 /* TrashTalkSolitaireApp.swift in Sources */,
 				A10000002 /* Card.swift in Sources */,
+				4348D98C2F383F4800BE3055 /* StatsManager.swift in Sources */,
 				A10000003 /* GameState.swift in Sources */,
 				A10000004 /* GameViewModel.swift in Sources */,
 				A10000005 /* Commentator.swift in Sources */,
@@ -198,6 +205,7 @@
 				A10000017 /* SoundManager.swift in Sources */,
 				A10000007 /* CardView.swift in Sources */,
 				A10000008 /* GameView.swift in Sources */,
+				4348D98E2F383F5C00BE3055 /* HapticManager.swift in Sources */,
 				A10000009 /* CommentaryBubble.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
