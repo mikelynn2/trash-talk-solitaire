@@ -228,188 +228,188 @@ final class Commentator {
     func streakComment(streak: Int) -> String? {
         switch streak {
         case 3:
-            return "Three wins in a row! Don't let it go to your head."
+            return "Three consecutive victories, sir. Most adequate."
         case 5:
-            return "FIVE game streak! Okay, I'm officially impressed."
+            return "Five in succession. I confess myself... not entirely unimpressed."
         case 10:
-            return "TEN wins?! Who ARE you?! 🏆"
+            return "Ten victories. I shall inform the household staff. 🏆"
         default:
             return nil
         }
     }
 
-    // MARK: - Commentary Banks (80+ lines total)
+    // MARK: - Commentary Banks (British Butler Voice)
 
     private let aceToFoundationComments = [
-        "An ace to the foundation. Even a broken clock is right twice a day.",
-        "Ace up! Literally the easiest move in the game, but I'll allow it.",
-        "Wow, you found the ace. Want a trophy?",
-        "Foundation ace! The game basically did that one for you.",
-        "An ace! Don't let it go to your head.",
-        "Ace to foundation. Groundbreaking stuff here.",
-        "Oh look, you can count to one. Ace placed.",
-        "The ace found its home. How touching.",
+        "The ace finds its place, sir. As even you could manage.",
+        "Ace to foundation. The most elementary of moves, yet here we are celebrating.",
+        "An ace placed correctly. Shall I fetch a medal?",
+        "Foundation ace. The cards practically placed themselves.",
+        "An ace, sir. One does hope this sets a precedent.",
+        "Ace secured. Even a child could manage as much.",
+        "The ace is home. I shall try to contain my astonishment.",
+        "Ace to foundation. Textbook, if the textbook were written for beginners.",
     ]
 
     private let kingToFoundationComments = [
-        "A KING to the foundation?! I'm actually impressed. Mark the calendar.",
-        "Full suit complete! Okay, okay, I see you!",
-        "King home! You might actually know what you're doing... nah.",
-        "The king is home! Even I have to respect that one.",
-        "KING TO FOUNDATION! The prophecy is fulfilled!",
-        "A complete suit! I'm not crying, YOU'RE crying!",
+        "A king to the foundation. I confess, sir, I did not anticipate competence.",
+        "The suit is complete. I shall alert the press.",
+        "King home at last. Even I must acknowledge this achievement.",
+        "A full suit, sir. Most... unexpected.",
+        "The king rests upon his throne. Well played, I suppose.",
+        "Complete. I find myself nearly impressed.",
     ]
 
     private let foundationComments = [
-        "Finally! A move that doesn't make me question your life choices.",
-        "Look at you, playing like you've actually seen cards before!",
-        "Foundation move. Solid. Don't get used to this praise.",
-        "Hey, a smart move! Who are you and what did you do with the player?",
-        "Nice. See? Good things happen when you don't panic.",
-        "Foundation bound! I'd clap but I don't have hands.",
-        "A competent move? In THIS economy?",
-        "That's the stuff. More of this, less of... everything else you do.",
-        "Card to foundation! Your parents would be proud. Maybe.",
-        "Lovely move, dear. Even I couldn't have done it better.",
-        "Right then! That's proper card playing, that is.",
-        "Foundation! You're learning! Slowly, but learning.",
+        "A foundation move. One begins to see glimmers of potential.",
+        "Well placed, sir. Do try to remember this feeling.",
+        "Foundation. Adequate. One might even say 'competent.'",
+        "A sensible move. How refreshingly out of character.",
+        "To the foundation. Perhaps there is hope for you yet.",
+        "Card secured. I shan't grow accustomed to this level of play.",
+        "Foundation bound. The ancestors would be... less disappointed.",
+        "A proper move, sir. More of this, if you please.",
+        "Well executed. I shall make a note in the ledger.",
+        "Foundation. You continue to surprise, sir. Not always pleasantly, but still.",
+        "Quite right. That is precisely where it belongs.",
+        "Progress, sir. Slow, meandering progress, but progress nonetheless.",
     ]
 
     private let kingToEmptyComments = [
-        "King to an empty column. Textbook. I'm proud. Kind of.",
-        "Smart—filling that empty spot with a king. Was that on purpose?",
-        "A king where a king should go. Revolutionary strategy.",
-        "Empty column + King = the one move you CAN'T mess up. Well done.",
-        "King to empty space! Someone read the rules!",
-        "That's a proper king placement. I'm almost impressed.",
+        "King to the empty column. Even you couldn't misplace a king.",
+        "The king takes his throne. A move so obvious, even you found it.",
+        "King to vacancy. Correct, sir. Savour the novelty.",
+        "A king where a king belongs. Revolutionary thinking.",
+        "The empty column accepts its king. How terribly conventional of you.",
+        "King placed. One does appreciate adherence to basic principles.",
     ]
 
     private let revealComments = [
-        "Ooh, revealing a hidden card. The suspense is killing me.",
-        "Uncovering secrets! This is the most excitement I've had all day.",
-        "New card revealed! Let's see if you know what to do with it.",
-        "A face-down card flips! Christmas morning energy.",
-        "Plot twist! A new card enters the chat.",
-        "Mystery card revealed! The plot thickens.",
-        "Another card sees the light! How poetic.",
-        "Flip! New possibilities emerge.",
+        "A hidden card reveals itself. The suspense was... manageable.",
+        "The card turns. Let us see what you make of it.",
+        "Revealed, sir. I trust you have a plan. Any plan.",
+        "A new card emerges. The plot, as they say, thickens.",
+        "Uncovered. One hopes you shan't waste this opportunity.",
+        "The mystery resolves. Now, do try not to bury it immediately.",
+        "A card brought to light. How illuminating.",
+        "Revealed. The possibilities expand. Your execution, less so.",
     ]
 
     private let buryComments = [
-        "Oh, burying that card? Bold strategy, let's see how that works out...",
-        "Sure, just pile more cards on. That's definitely how you win.",
-        "Wow. Just... wow. My grandmother plays better and she's been dead for 10 years.",
-        "That move was so bad, the cards are embarrassed for you.",
-        "You're building a tower of regret right now.",
-        "Ah yes, the classic 'make my life harder' strategy.",
-        "I've seen better moves from a shuffling machine.",
-        "That pile is getting dangerously close to a fire hazard.",
-        "Burying cards like they're treasure. Spoiler: they're not.",
-        "That poor card. Trapped forever under your mountain of mistakes.",
-        "You just made that card's life significantly worse.",
-        "Oh dear. That card had dreams, you know.",
+        "Burying a card, sir? A bold strategy. Bold, and inadvisable.",
+        "That card had potential, sir. Had.",
+        "I have served many masters, sir. None have buried cards with such enthusiasm.",
+        "One observes you building a monument to poor decisions.",
+        "That move, sir, would make a fish weep.",
+        "Ah yes, the 'create problems for future self' approach.",
+        "I have seen better moves from gentlemen three bottles deep in port.",
+        "That pile grows ever more... regrettable.",
+        "Burying treasure, sir? No. Burying opportunities.",
+        "That card shall not see daylight again in this lifetime.",
+        "A curious choice. 'Curious' being charitable.",
+        "Sir. That card had a family.",
     ]
 
     private let foundationToTableauComments = [
-        "TAKING A CARD OFF THE FOUNDATION? Are you having a stroke?",
-        "Oh cool, we're going BACKWARDS now. Love that for us.",
-        "Foundation to tableau. You know that's the wrong direction, right?",
-        "I... what? Why would you... I need a minute.",
-        "Removing from foundation. This is a cry for help, isn't it?",
-        "BACKWARDS?! The cards go UP, not down!",
-        "Un-progressing. Bold. Stupid, but bold.",
+        "Removing from the foundation, sir? Are you quite well?",
+        "Backwards, sir. We appear to be going backwards.",
+        "From foundation to tableau. Unconventional. Also incorrect.",
+        "I... shall require a moment to process this decision.",
+        "Retreating from progress. A metaphor, perhaps?",
+        "The cards go UP, sir. It is rather the point.",
+        "Un-winning, sir. A novel approach to solitaire.",
     ]
 
     private let bigStackComments = [
-        "Moving a whole stack! Big brain energy right there.",
-        "Look at that cascade! Someone's been paying attention.",
-        "A multi-card move! You're either a genius or very lucky.",
-        "Stack transfer! I'd be impressed if I wasn't so suspicious.",
-        "Big stack energy! That's what I'm talking about!",
-        "Ooh, look at you moving MULTIPLE cards. Show off.",
+        "A cascade, sir. Someone has been paying attention.",
+        "Multiple cards in motion. One detects a hint of strategy.",
+        "A substantial move. Either brilliance or luck. I suspect the latter.",
+        "The stack transfers. I shall endeavour to look impressed.",
+        "Cards in formation. Most orderly of you.",
+        "A considerable relocation. Well managed, I suppose.",
     ]
 
     private let winComments = [
-        "YOU WON?! I mean... of course you won. I taught you everything you know.",
-        "All 52 cards home! I'm not crying, you're crying.",
-        "VICTORY! Against all odds—and I do mean ALL odds—you did it!",
-        "Winner winner chicken dinner! I honestly didn't think you had it in you.",
-        "The cards are home! Somebody call ESPN, we've got a champion!",
-        "YOU ABSOLUTE LEGEND! Wait, was this on easy mode?",
-        "I take back every mean thing I said. Most of them. Some of them. A few.",
-        "WINNER! And they said you'd never amount to anything!",
-        "All cards home! Quick, buy a lottery ticket!",
-        "Victory is yours! Frame this moment, it may never happen again.",
+        "Victory, sir. I shall admit to a modicum of surprise.",
+        "All cards home. Against considerable odds, you've done it.",
+        "Complete. I withdraw several of my previous observations.",
+        "You've won, sir. I shall have the champagne brought round.",
+        "The game is yours. Savour it. Such moments may be rare.",
+        "Triumph. I confess myself... not entirely disappointed.",
+        "Finished, and successfully. The household shall be informed.",
+        "Victory is yours, sir. I shall update my assessment accordingly.",
+        "All fifty-two, home safe. Well played, sir. Genuinely.",
+        "Won. I shall try not to appear astonished.",
     ]
     
     private let fastWinComments = [
-        "Speed demon! That was faster than I can insult you!",
-        "Lightning quick! Are you some kind of card wizard?",
-        "BLITZ WIN! I barely had time to mock you!",
-        "That was... actually impressive. Under 3 minutes! 🔥",
-        "Speedrun complete! Somebody's been practicing!",
+        "Swiftly done, sir. I barely had time to form criticisms.",
+        "Speed and precision. Are you quite certain you're the usual player?",
+        "Rapid victory. Most efficient.",
+        "Under three minutes, sir. I am genuinely impressed.",
+        "Lightning pace. Perhaps I have underestimated you.",
     ]
     
     private let slowWinComments = [
-        "FINALLY! I was starting to grow moss over here.",
-        "A win's a win, but... did you stop for lunch midway?",
-        "Victory! Only took you... *checks watch* ...forever.",
-        "You won! The cards were starting to fade from age.",
-        "Marathon complete! Persistence beats skill, apparently.",
+        "At last, sir. I was beginning to gather dust.",
+        "Victory achieved. Eventually. Very eventually.",
+        "A win, sir. The scenic route, but a win nonetheless.",
+        "Complete. I had begun to draft my memoirs in the interim.",
+        "Finished. Patience, they say, is a virtue. You've tested mine thoroughly.",
     ]
     
     private let undoWinComments = [
-        "You won! With LIBERAL use of the undo button, but still!",
-        "Victory through trial and error. Mostly error.",
-        "All those undos paid off! Barely.",
-        "You undid your way to victory! Questionable, but valid.",
+        "Won, sir. With considerable assistance from the undo function.",
+        "Victory through revision. Many, many revisions.",
+        "Complete. The undo button has earned its keep today.",
+        "You've won, sir. By the most circuitous path imaginable.",
     ]
     
     private let hintWinComments = [
-        "You won! With my help. LOTS of my help.",
-        "Victory! I basically held your hand the whole way.",
-        "Winner! Though 'assisted win' might be more accurate.",
-        "You did it! By which I mean WE did it. Mostly me.",
+        "Victory, sir. Though 'collaborative effort' might be more accurate.",
+        "Won, with guidance. Substantial guidance.",
+        "Complete. I trust you recognise my contribution.",
+        "Finished. 'Team effort' shall be the official record.",
     ]
     
     private let hintComments = [
-        "Oh, fine... try THAT one.",
-        "Here's a hint: look where I'm pointing, genius.",
-        "Since you asked nicely... there.",
-        "A hint? Already? *sigh* Fine, look here.",
-        "Needing help already? Classic.",
-        "Look. There. You're welcome.",
+        "Very well, sir. Observe.",
+        "A hint, as requested. Do try to internalise it.",
+        "If I may direct your attention... there.",
+        "Assistance rendered, sir. Again.",
+        "The move you seek is here. Obviously.",
+        "As you wish. Behold.",
     ]
     
     private let firstHintComments = [
-        "Oh, already need help? Here you go, dear.",
-        "First hint of the game? No shame... well, SOME shame.",
-        "Let me help you get started, you poor thing.",
-        "Giving you a freebie. Don't get used to it.",
+        "Already, sir? Very well. Here.",
+        "A hint so soon? No matter. Look here.",
+        "Requiring assistance already. How very expected.",
+        "The first of what I anticipate shall be many. There you are.",
     ]
     
     private let manyHintsComments = [
-        "ANOTHER hint?! Just let ME play at this point!",
-        "You know hints don't count as skill, right?",
-        "I'm basically playing this game FOR you now.",
-        "Hint machine going BRRR. Have you tried thinking?",
-        "At this point I should get credit for the win.",
+        "Another hint, sir? At this point, shall I simply play for you?",
+        "Hints do not accumulate into skill, sir.",
+        "I appear to be doing the thinking for both of us.",
+        "One more hint. I'm keeping count, naturally.",
+        "Sir, at this juncture, the victory shall be mine by proxy.",
     ]
     
     private let undoComments = [
-        "Taking it back? Even YOU know that was bad.",
-        "Undo! Erasing your mistakes, one at a time.",
-        "Second thoughts? Good, you needed them.",
-        "Undoing that disaster. Wise choice.",
-        "Ctrl+Z in card form. I respect it.",
+        "Reconsidering, sir? Wise, given the circumstances.",
+        "The undo. A gentleman's admission of error.",
+        "Taking it back. Even you recognised that mistake.",
+        "Reversed, sir. A prudent retreat.",
+        "The move undone. Progress through regression.",
     ]
     
     private let manyUndoComments = [
-        "SO many undos! This game is more undo than do!",
-        "You've undone so much, we're practically back at the start.",
-        "The undo button is filing for overtime pay.",
-        "At this point you're not playing, you're rewinding.",
-        "Undo count: yes. Just... yes.",
+        "Sir, the undo button is not a strategy.",
+        "We appear to be playing in reverse.",
+        "So many undos. Are we making progress or merely oscillating?",
+        "The undo count grows concerning, sir.",
+        "At this rate, we shall arrive back at the initial deal.",
     ]
 }
 
