@@ -106,6 +106,14 @@ struct GameView: View {
             .sheet(isPresented: $showAchievements) {
                 achievementsSheet
             }
+            .alert("No Moves Available", isPresented: $vm.showNoMovesAlert) {
+                Button("New Game") {
+                    vm.deal()
+                }
+                Button("Keep Trying", role: .cancel) { }
+            } message: {
+                Text("There are no more valid moves. Would you like to start a new game?")
+            }
         }
         .statusBarHidden(false)
     }
@@ -574,6 +582,23 @@ struct GameView: View {
                                 .fontWeight(.semibold)
                         }
                     }
+                }
+                
+                // MARK: Difficulty
+                Section("Difficulty") {
+                    Picker("Deal Difficulty", selection: Binding(
+                        get: { vm.currentDifficulty },
+                        set: { vm.setDifficulty($0) }
+                    )) {
+                        ForEach(DeckDifficulty.allCases, id: \.self) { difficulty in
+                            Text(difficulty.rawValue).tag(difficulty)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    Text(vm.currentDifficulty.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
                 
                 // MARK: Audio Settings

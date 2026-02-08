@@ -15,6 +15,7 @@ final class GameViewModel: ObservableObject {
     @Published var isAutoCompleting: Bool = false
     @Published var flyingCard: Card?
     @Published var flyingCardPosition: CGPoint = .zero
+    @Published var showNoMovesAlert: Bool = false
 
     // MARK: - Dependencies
 
@@ -53,7 +54,8 @@ final class GameViewModel: ObservableObject {
         gameStarted = true
         commentator.resetForNewGame()
         
-        var deck = Card.fullDeck().shuffled()
+        let difficulty = DeckDifficulty(rawValue: UserDefaults.standard.string(forKey: "deckDifficulty") ?? "Medium") ?? .medium
+        var deck = shuffleDeck(difficulty: difficulty)
         var tableau: [[Card]] = Array(repeating: [], count: 7)
 
         for col in 0..<7 {
@@ -80,6 +82,50 @@ final class GameViewModel: ObservableObject {
         startTimer()
         setCommentary("Fresh deck. Try not to embarrass yourself.", mood: .neutral)
         validateCardCount()
+    }
+    
+    // MARK: - Difficulty-Based Shuffle
+    
+    private func shuffleDeck(difficulty: DeckDifficulty) -> [Card] {
+        var deck = Card.fullDeck()
+        
+        switch difficulty {
+        case .easy:
+            // Bias aces and low cards toward the end (more accessible positions)
+            deck.shuffle()
+            let lowCards = deck.filter { $0.rank.rawValue <= 4 }  // A, 2, 3, 4
+            let highCards = deck.filter { $0.rank.rawValue > 4 }
+            // Put high cards first (will be buried), low cards after (more accessible)
+            deck = highCards.shuffled() + lowCards.shuffled()
+            // Add some randomness so it's not too predictable
+            for _ in 0..<10 {
+                let i = Int.random(in: 0..<deck.count)
+                let j = Int.random(in: 0..<deck.count)
+                deck.swapAt(i, j)
+            }
+            
+        case .medium:
+            // Pure random
+            deck.shuffle()
+            
+        case .hard:
+            // Bury aces deep, clump colors together
+            deck.shuffle()
+            let aces = deck.filter { $0.rank == .ace }
+            let nonAces = deck.filter { $0.rank != .ace }
+            // Sort non-aces to clump colors (makes alternating harder)
+            let sortedNonAces = nonAces.sorted { $0.color == $1.color ? Bool.random() : $0.color.rawValue < $1.color.rawValue }
+            // Put aces at the front (will be dealt to tableau first = buried deep)
+            deck = aces.shuffled() + sortedNonAces
+            // Light shuffle to not be too obvious
+            for _ in 0..<5 {
+                let i = Int.random(in: 4..<deck.count)  // Don't move aces
+                let j = Int.random(in: 4..<deck.count)
+                deck.swapAt(i, j)
+            }
+        }
+        
+        return deck
     }
 
     // MARK: - Timer
@@ -123,6 +169,13 @@ final class GameViewModel: ObservableObject {
             sounds.playDraw()
         }
         validateCardCount()
+        
+        // Check for no moves when stock is exhausted
+        if state.stock.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.checkForNoMoves()
+            }
+        }
     }
 
     // MARK: - Tap-to-Move
@@ -488,6 +541,39 @@ final class GameViewModel: ObservableObject {
         return allFaceUp && state.stock.isEmpty
     }
 
+    // MARK: - No Moves Detection
+    
+    func hasAnyValidMoves() -> Bool {
+        // Can draw from stock?
+        if !state.stock.isEmpty || !state.waste.isEmpty {
+            // Stock not exhausted - might have moves after drawing
+            // Only check for true "stuck" when stock is empty AND waste has been cycled
+            if !state.stock.isEmpty { return true }
+        }
+        
+        // Check if any hint exists (reuse hint logic)
+        if findHint() != nil { return true }
+        
+        // If stock is empty but waste has cards, we could recycle
+        if state.stock.isEmpty && !state.waste.isEmpty { return true }
+        
+        return false
+    }
+    
+    func checkForNoMoves() {
+        // Only check when stock is empty (player has seen all cards)
+        guard state.stock.isEmpty else { return }
+        
+        // Don't check if game is won
+        guard !state.isWon else { return }
+        
+        // Check if any moves exist
+        if !hasAnyValidMoves() && state.waste.isEmpty {
+            showNoMovesAlert = true
+            setCommentary("No more moves available, sir. A regrettable conclusion.", mood: .roast)
+        }
+    }
+    
     // MARK: - Hints
     
     func showHint() {
@@ -636,6 +722,23 @@ final class GameViewModel: ObservableObject {
             state.vegasScore = 0
             setCommentary("Leaving Vegas. Probably wise.", mood: .neutral)
         }
+    }
+    
+    func setDifficulty(_ difficulty: DeckDifficulty) {
+        state.difficulty = difficulty
+        UserDefaults.standard.set(difficulty.rawValue, forKey: "deckDifficulty")
+        switch difficulty {
+        case .easy:
+            setCommentary("Easy mode. No judgment, sir. Well, perhaps a little.", mood: .neutral)
+        case .medium:
+            setCommentary("Standard difficulty. As fate intended.", mood: .neutral)
+        case .hard:
+            setCommentary("Hard mode. I admire your optimism, sir.", mood: .neutral)
+        }
+    }
+    
+    var currentDifficulty: DeckDifficulty {
+        DeckDifficulty(rawValue: UserDefaults.standard.string(forKey: "deckDifficulty") ?? "Medium") ?? .medium
     }
 
     // MARK: - Formatted Time

@@ -1,5 +1,19 @@
 import Foundation
 
+enum DeckDifficulty: String, CaseIterable {
+    case easy = "Easy"
+    case medium = "Medium"
+    case hard = "Hard"
+    
+    var description: String {
+        switch self {
+        case .easy: return "Aces & low cards more accessible"
+        case .medium: return "Pure random shuffle"
+        case .hard: return "Aces buried, colors clumped"
+        }
+    }
+}
+
 struct GameState {
     var tableau: [[Card]]       // 7 piles
     var foundations: [[Card]]   // 4 piles (one per suit, but indexed 0-3)
@@ -15,6 +29,9 @@ struct GameState {
     // Vegas scoring
     var vegasMode: Bool = false
     var vegasScore: Int = -52  // Start at -$52
+    
+    // Difficulty
+    var difficulty: DeckDifficulty = .medium
 
     static func empty() -> GameState {
         GameState(
