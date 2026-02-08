@@ -220,8 +220,9 @@ struct GameView: View {
                     let card = vm.state.waste[cardIndex]
                     let isTopCard = i == visibleCount - 1
                     let isSelected = isTopCard && isSourceSelected(.waste)
+                    let isHinted = isTopCard && isHintSource(.waste)
                     
-                    CardView(card: card, isSelected: isSelected, width: cardWidth)
+                    CardView(card: card, isSelected: isSelected, isHinted: isHinted, width: cardWidth)
                         .offset(x: CGFloat(i) * 12)
                         .zIndex(Double(i))
                         .allowsHitTesting(isTopCard)
@@ -238,7 +239,8 @@ struct GameView: View {
                 // Draw 1: Single card
                 if let card = vm.state.waste.last {
                     let isSelected = isSourceSelected(.waste)
-                    CardView(card: card, isSelected: isSelected, width: cardWidth)
+                    let isHinted = isHintSource(.waste)
+                    CardView(card: card, isSelected: isSelected, isHinted: isHinted, width: cardWidth)
                         .transition(.asymmetric(
                             insertion: .move(edge: .leading).combined(with: .opacity),
                             removal: .opacity
@@ -261,14 +263,16 @@ struct GameView: View {
     private func foundationView(pile: Int) -> some View {
         ZStack {
             let suitLabels = ["♣", "♦", "♥", "♠"]
+            let isHintDest = isHintedFoundationPile(pile)
+            
             if let card = vm.state.foundations[pile].last {
-                CardView(card: card, width: cardWidth)
+                CardView(card: card, isHinted: isHintDest, width: cardWidth)
                     .transition(.scale.combined(with: .opacity))
                     .onTapGesture {
                         vm.tapCard(source: .foundation(pile: pile))
                     }
             } else {
-                EmptyPileView(label: suitLabels[pile], width: cardWidth)
+                EmptyPileView(label: suitLabels[pile], width: cardWidth, isHinted: isHintDest)
                     .onTapGesture {
                         vm.tapCard(source: .foundation(pile: pile))
                     }
@@ -281,10 +285,11 @@ struct GameView: View {
 
     private func tableauPileView(pile: Int, colWidth: CGFloat) -> some View {
         let cards = vm.state.tableau[pile]
+        let isHintDest = isHintedTableauPile(pile)
 
         return ZStack(alignment: .top) {
             if cards.isEmpty {
-                EmptyPileView(width: cardWidth)
+                EmptyPileView(width: cardWidth, isHinted: isHintDest)
                     .onTapGesture {
                         vm.tapCard(source: .tableau(pile: pile, cardIndex: 0))
                     }
@@ -294,8 +299,11 @@ struct GameView: View {
                 let source = MoveSource.tableau(pile: pile, cardIndex: index)
                 let isSelected = isSourceSelected(source)
                 let isPartOfDrag = isDraggedSubstack(pile: pile, cardIndex: index)
+                let isHinted = isHintSource(source)
+                // Also highlight top card of destination pile
+                let isDestHinted = isHintDest && index == cards.count - 1
 
-                CardView(card: card, isSelected: isSelected, width: cardWidth)
+                CardView(card: card, isSelected: isSelected, isHinted: isHinted || isDestHinted, width: cardWidth)
                     .offset(y: CGFloat(index) * tableauSpacing)
                     .zIndex(Double(index))
                     .opacity(isPartOfDrag ? 0.0 : 1.0)
@@ -510,6 +518,30 @@ struct GameView: View {
     private func isDraggedSubstack(pile: Int, cardIndex: Int) -> Bool {
         guard case .tableau(let dragPile, let dragIndex) = dragSource else { return false }
         return pile == dragPile && cardIndex >= dragIndex
+    }
+    
+    // MARK: - Hint Helpers
+    
+    private func isHintSource(_ source: MoveSource) -> Bool {
+        vm.hintSource == source
+    }
+    
+    private func isHintDestination(_ destination: MoveDestination) -> Bool {
+        vm.hintDestination == destination
+    }
+    
+    private func isHintedTableauPile(_ pile: Int) -> Bool {
+        if case .tableau(let hintPile) = vm.hintDestination {
+            return hintPile == pile
+        }
+        return false
+    }
+    
+    private func isHintedFoundationPile(_ pile: Int) -> Bool {
+        if case .foundation(let hintPile) = vm.hintDestination {
+            return hintPile == pile
+        }
+        return false
     }
 
     // MARK: - Settings Sheet

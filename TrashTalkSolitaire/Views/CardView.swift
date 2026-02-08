@@ -3,11 +3,13 @@ import SwiftUI
 struct CardView: View {
     let card: Card
     var isSelected: Bool = false
+    var isHinted: Bool = false
     var width: CGFloat = 48
     var height: CGFloat { width * 1.4 }
     
     @State private var flipped: Bool = false
     @State private var showFace: Bool = false
+    @State private var hintPulse: Bool = false
     
     private var suitColor: Color {
         card.color == .red ? Color.red : Color.black
@@ -27,6 +29,13 @@ struct CardView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 6)
                 .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 3)
+        )
+        .overlay(
+            // Hint glow overlay
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.green, lineWidth: hintPulse ? 4 : 2)
+                .opacity(isHinted ? (hintPulse ? 1.0 : 0.6) : 0)
+                .shadow(color: .green.opacity(isHinted ? 0.8 : 0), radius: hintPulse ? 12 : 6)
         )
         .shadow(color: .black.opacity(0.4), radius: 2, x: 1, y: 2)
         .onAppear {
@@ -48,6 +57,16 @@ struct CardView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     showFace = false
                 }
+            }
+        }
+        .onChange(of: isHinted) { _, newValue in
+            if newValue {
+                // Start pulsing animation
+                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                    hintPulse = true
+                }
+            } else {
+                hintPulse = false
             }
         }
     }
@@ -115,6 +134,9 @@ struct EmptyPileView: View {
     var width: CGFloat = 48
     var height: CGFloat { width * 1.4 }
     var isHighlighted: Bool = false
+    var isHinted: Bool = false
+    
+    @State private var hintPulse: Bool = false
 
     var body: some View {
         ZStack {
@@ -123,8 +145,8 @@ struct EmptyPileView: View {
             
             RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(
-                    isHighlighted ? Color.yellow : Color.white.opacity(0.3),
-                    style: StrokeStyle(lineWidth: isHighlighted ? 2.5 : 1.5, dash: isHighlighted ? [] : [5])
+                    isHighlighted ? Color.yellow : (isHinted ? Color.green : Color.white.opacity(0.3)),
+                    style: StrokeStyle(lineWidth: isHighlighted || isHinted ? 2.5 : 1.5, dash: (isHighlighted || isHinted) ? [] : [5])
                 )
             
             if !label.isEmpty {
@@ -134,5 +156,15 @@ struct EmptyPileView: View {
             }
         }
         .frame(width: width, height: height)
+        .shadow(color: isHinted ? .green.opacity(hintPulse ? 0.8 : 0.4) : .clear, radius: hintPulse ? 12 : 6)
+        .onChange(of: isHinted) { _, newValue in
+            if newValue {
+                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                    hintPulse = true
+                }
+            } else {
+                hintPulse = false
+            }
+        }
     }
 }
