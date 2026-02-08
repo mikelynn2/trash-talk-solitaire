@@ -3,6 +3,7 @@ import SwiftUI
 struct GameView: View {
     @StateObject private var vm = GameViewModel()
     @State private var showSettings = false
+    @State private var showAchievements = false
     @State private var dragCards: [Card] = []
     @State private var dragSource: MoveSource?
     @State private var dragOffset: CGSize = .zero
@@ -42,12 +43,12 @@ struct GameView: View {
                         stockView
                             .frame(width: colWidth, alignment: .center)
 
-                        // Waste
+                        // Waste (with Draw 3 fan)
                         wasteView
-                            .frame(width: colWidth, alignment: .center)
+                            .frame(width: colWidth + (vm.state.drawThreeMode ? 20 : 0), alignment: .center)
 
                         Spacer()
-                            .frame(width: colWidth)
+                            .frame(width: colWidth - (vm.state.drawThreeMode ? 20 : 0))
 
                         // 4 Foundation piles
                         ForEach(0..<4, id: \.self) { i in
@@ -84,14 +85,26 @@ struct GameView: View {
                     WinOverlay(
                         moveCount: vm.state.moveCount,
                         time: vm.formattedTime,
+                        vegasScore: vm.state.vegasMode ? vm.state.vegasScore : nil,
                         onNewGame: { vm.deal() }
                     )
                     .transition(.scale.combined(with: .opacity))
                 }
+                
+                // Achievement unlock toast
+                if let achievement = vm.stats.newlyUnlockedAchievement {
+                    AchievementToast(achievement: achievement)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .zIndex(2000)
+                }
             }
             .animation(.easeInOut(duration: 0.5), value: vm.state.isWon)
+            .animation(.spring(), value: vm.stats.newlyUnlockedAchievement != nil)
             .sheet(isPresented: $showSettings) {
                 settingsSheet
+            }
+            .sheet(isPresented: $showAchievements) {
+                achievementsSheet
             }
         }
         .statusBarHidden(false)
@@ -109,14 +122,25 @@ struct GameView: View {
 
             Spacer()
 
-            // Move counter
-            HStack(spacing: 4) {
-                Image(systemName: "hand.tap")
-                    .font(.system(size: 11))
-                Text("\(vm.state.moveCount)")
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+            // Vegas score OR move counter
+            if vm.state.vegasMode {
+                HStack(spacing: 4) {
+                    Image(systemName: "dollarsign.circle.fill")
+                        .font(.system(size: 11))
+                        .foregroundColor(vm.state.vegasScore >= 0 ? .green : .red)
+                    Text(vm.formattedVegasScore)
+                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                        .foregroundColor(vm.state.vegasScore >= 0 ? .green : .red)
+                }
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "hand.tap")
+                        .font(.system(size: 11))
+                    Text("\(vm.state.moveCount)")
+                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                }
+                .foregroundColor(.white.opacity(0.8))
             }
-            .foregroundColor(.white.opacity(0.8))
 
             Spacer()
 
@@ -182,25 +206,55 @@ struct GameView: View {
         }
     }
 
-    // MARK: - Waste
+    // MARK: - Waste (with Draw 3 fan)
 
     private var wasteView: some View {
         ZStack {
-            if let card = vm.state.waste.last {
-                let isSelected = isSourceSelected(.waste)
-                CardView(card: card, isSelected: isSelected, width: cardWidth)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .opacity
-                    ))
-                    .onTapGesture { vm.tapCard(source: .waste) }
-                    .onTapGesture(count: 2) { vm.doubleTapCard(source: .waste) }
-                    .gesture(dragGesture(for: .waste, cards: [card]))
-                    .opacity(isBeingDragged(.waste) ? 0.0 : 1.0)
+            if vm.state.drawThreeMode {
+                // Draw 3: Show up to 3 fanned cards
+                let visibleCount = min(3, vm.state.waste.count)
+                let startIndex = max(0, vm.state.waste.count - 3)
+                
+                ForEach(0..<visibleCount, id: \.self) { i in
+                    let cardIndex = startIndex + i
+                    let card = vm.state.waste[cardIndex]
+                    let isTopCard = i == visibleCount - 1
+                    let isSelected = isTopCard && isSourceSelected(.waste)
+                    let isHinted = isTopCard && isHintSource(.waste)
+                    
+                    CardView(card: card, isSelected: isSelected, isHinted: isHinted, width: cardWidth)
+                        .offset(x: CGFloat(i) * 12)
+                        .zIndex(Double(i))
+                        .allowsHitTesting(isTopCard)
+                        .onTapGesture {
+                            if isTopCard { vm.tapCard(source: .waste) }
+                        }
+                        .onTapGesture(count: 2) {
+                            if isTopCard { vm.doubleTapCard(source: .waste) }
+                        }
+                        .gesture(isTopCard ? dragGesture(for: .waste, cards: [card]) : nil)
+                        .opacity(isTopCard && isBeingDragged(.waste) ? 0.0 : 1.0)
+                }
             } else {
-                EmptyPileView(width: cardWidth)
+                // Draw 1: Single card
+                if let card = vm.state.waste.last {
+                    let isSelected = isSourceSelected(.waste)
+                    let isHinted = isHintSource(.waste)
+                    CardView(card: card, isSelected: isSelected, isHinted: isHinted, width: cardWidth)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .leading).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                        .onTapGesture { vm.tapCard(source: .waste) }
+                        .onTapGesture(count: 2) { vm.doubleTapCard(source: .waste) }
+                        .gesture(dragGesture(for: .waste, cards: [card]))
+                        .opacity(isBeingDragged(.waste) ? 0.0 : 1.0)
+                } else {
+                    EmptyPileView(width: cardWidth)
+                }
             }
         }
+        .frame(width: vm.state.drawThreeMode ? cardWidth + 24 : cardWidth, alignment: .leading)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: vm.state.waste.count)
     }
 
@@ -209,14 +263,16 @@ struct GameView: View {
     private func foundationView(pile: Int) -> some View {
         ZStack {
             let suitLabels = ["♣", "♦", "♥", "♠"]
+            let isHintDest = isHintedFoundationPile(pile)
+            
             if let card = vm.state.foundations[pile].last {
-                CardView(card: card, width: cardWidth)
+                CardView(card: card, isHinted: isHintDest, width: cardWidth)
                     .transition(.scale.combined(with: .opacity))
                     .onTapGesture {
                         vm.tapCard(source: .foundation(pile: pile))
                     }
             } else {
-                EmptyPileView(label: suitLabels[pile], width: cardWidth)
+                EmptyPileView(label: suitLabels[pile], width: cardWidth, isHinted: isHintDest)
                     .onTapGesture {
                         vm.tapCard(source: .foundation(pile: pile))
                     }
@@ -229,10 +285,11 @@ struct GameView: View {
 
     private func tableauPileView(pile: Int, colWidth: CGFloat) -> some View {
         let cards = vm.state.tableau[pile]
+        let isHintDest = isHintedTableauPile(pile)
 
         return ZStack(alignment: .top) {
             if cards.isEmpty {
-                EmptyPileView(width: cardWidth)
+                EmptyPileView(width: cardWidth, isHinted: isHintDest)
                     .onTapGesture {
                         vm.tapCard(source: .tableau(pile: pile, cardIndex: 0))
                     }
@@ -242,8 +299,11 @@ struct GameView: View {
                 let source = MoveSource.tableau(pile: pile, cardIndex: index)
                 let isSelected = isSourceSelected(source)
                 let isPartOfDrag = isDraggedSubstack(pile: pile, cardIndex: index)
+                let isHinted = isHintSource(source)
+                // Also highlight top card of destination pile
+                let isDestHinted = isHintDest && index == cards.count - 1
 
-                CardView(card: card, isSelected: isSelected, width: cardWidth)
+                CardView(card: card, isSelected: isSelected, isHinted: isHinted || isDestHinted, width: cardWidth)
                     .offset(y: CGFloat(index) * tableauSpacing)
                     .zIndex(Double(index))
                     .opacity(isPartOfDrag ? 0.0 : 1.0)
@@ -271,6 +331,7 @@ struct GameView: View {
                     dragSource = source
                     dragCards = cards
                     dragStartLocation = value.startLocation
+                    HapticManager.shared.cardPickup()
                 }
                 dragOffset = value.translation
             }
@@ -307,6 +368,7 @@ struct GameView: View {
                     if canDropOnFoundation(pile: pile) {
                         _ = vm.executeMove(from: source, to: .foundation(pile: pile))
                         vm.selectedSource = nil
+                        HapticManager.shared.cardPlace()
                         return
                     }
                 }
@@ -334,6 +396,7 @@ struct GameView: View {
                 if canDropOnTableau(pile: pile) {
                     _ = vm.executeMove(from: source, to: .tableau(pile: pile))
                     vm.selectedSource = nil
+                    HapticManager.shared.cardPlace()
                     return
                 }
             }
@@ -402,6 +465,7 @@ struct GameView: View {
         if let target = bestTarget {
             _ = vm.executeMove(from: source, to: target)
             vm.selectedSource = nil
+            HapticManager.shared.cardPlace()
         }
     }
     
@@ -455,12 +519,63 @@ struct GameView: View {
         guard case .tableau(let dragPile, let dragIndex) = dragSource else { return false }
         return pile == dragPile && cardIndex >= dragIndex
     }
+    
+    // MARK: - Hint Helpers
+    
+    private func isHintSource(_ source: MoveSource) -> Bool {
+        vm.hintSource == source
+    }
+    
+    private func isHintDestination(_ destination: MoveDestination) -> Bool {
+        vm.hintDestination == destination
+    }
+    
+    private func isHintedTableauPile(_ pile: Int) -> Bool {
+        if case .tableau(let hintPile) = vm.hintDestination {
+            return hintPile == pile
+        }
+        return false
+    }
+    
+    private func isHintedFoundationPile(_ pile: Int) -> Bool {
+        if case .foundation(let hintPile) = vm.hintDestination {
+            return hintPile == pile
+        }
+        return false
+    }
 
     // MARK: - Settings Sheet
 
     private var settingsSheet: some View {
         NavigationView {
             List {
+                // MARK: Game Mode
+                Section("Game Mode") {
+                    Toggle(isOn: Binding(
+                        get: { vm.state.drawThreeMode },
+                        set: { _ in vm.toggleDrawThreeMode() }
+                    )) {
+                        Label("Draw 3", systemImage: "square.3.layers.3d")
+                    }
+                    
+                    Toggle(isOn: Binding(
+                        get: { vm.state.vegasMode },
+                        set: { _ in vm.toggleVegasMode() }
+                    )) {
+                        Label("Vegas Scoring", systemImage: "dollarsign.circle")
+                    }
+                    
+                    if vm.state.vegasMode {
+                        HStack {
+                            Text("Cumulative Earnings")
+                            Spacer()
+                            Text(vm.stats.formattedVegasCumulative)
+                                .foregroundColor(vm.stats.vegasCumulative >= 0 ? .green : .red)
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+                
                 // MARK: Audio Settings
                 Section("Audio") {
                     Toggle(isOn: Binding(
@@ -505,6 +620,29 @@ struct GameView: View {
                         Label("Reset Stats", systemImage: "trash")
                     }
                 }
+                
+                // MARK: Achievements
+                Section("Achievements") {
+                    let unlockedCount = vm.stats.unlockedAchievements.count
+                    let totalCount = Achievement.allCases.count
+                    
+                    Button {
+                        showSettings = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showAchievements = true
+                        }
+                    } label: {
+                        HStack {
+                            Label("View Achievements", systemImage: "medal")
+                            Spacer()
+                            Text("\(unlockedCount)/\(totalCount)")
+                                .foregroundColor(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -513,6 +651,72 @@ struct GameView: View {
                     Button("Done") { showSettings = false }
                 }
             }
+        }
+    }
+    
+    // MARK: - Achievements Sheet
+    
+    private var achievementsSheet: some View {
+        NavigationView {
+            List {
+                ForEach(Achievement.allCases) { achievement in
+                    let isUnlocked = vm.stats.isUnlocked(achievement)
+                    
+                    HStack(spacing: 16) {
+                        // Icon
+                        Image(systemName: achievement.icon)
+                            .font(.system(size: 28))
+                            .foregroundColor(isUnlocked ? achievementColor(achievement) : .gray)
+                            .frame(width: 40)
+                        
+                        // Text
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(achievement.name)
+                                .font(.headline)
+                                .foregroundColor(isUnlocked ? .primary : .secondary)
+                            Text(achievement.description)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        // Unlock indicator
+                        if isUnlocked {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                                .font(.title2)
+                        } else {
+                            Image(systemName: "lock.fill")
+                                .foregroundColor(.gray.opacity(0.5))
+                                .font(.title3)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .opacity(isUnlocked ? 1.0 : 0.6)
+                }
+            }
+            .navigationTitle("Achievements")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { showAchievements = false }
+                }
+            }
+        }
+    }
+    
+    private func achievementColor(_ achievement: Achievement) -> Color {
+        switch achievement.color {
+        case "orange": return .orange
+        case "yellow": return .yellow
+        case "green": return .green
+        case "purple": return .purple
+        case "red": return .red
+        case "blue": return .blue
+        case "cyan": return .cyan
+        case "pink": return .pink
+        default: return .gray
         }
     }
 
@@ -530,11 +734,52 @@ struct GameView: View {
     }
 }
 
+// MARK: - Achievement Toast
+
+struct AchievementToast: View {
+    let achievement: Achievement
+    
+    var body: some View {
+        VStack {
+            HStack(spacing: 16) {
+                Image(systemName: achievement.icon)
+                    .font(.system(size: 32))
+                    .foregroundColor(.yellow)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Achievement Unlocked!")
+                        .font(.caption)
+                        .foregroundColor(.yellow)
+                    Text(achievement.name)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                }
+                
+                Spacer()
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.9))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.yellow.opacity(0.5), lineWidth: 2)
+                    )
+            )
+            .padding(.horizontal)
+            .padding(.top, 50)
+            
+            Spacer()
+        }
+    }
+}
+
 // MARK: - Win Overlay
 
 struct WinOverlay: View {
     let moveCount: Int
     let time: String
+    let vegasScore: Int?
     let onNewGame: () -> Void
     
     @State private var showContent = false
@@ -638,7 +883,7 @@ struct WinOverlay: View {
                 Spacer().frame(height: 20)
                 
                 // Stats with icons
-                HStack(spacing: 40) {
+                HStack(spacing: vegasScore != nil ? 30 : 40) {
                     VStack(spacing: 4) {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 28))
@@ -659,6 +904,21 @@ struct WinOverlay: View {
                         Text("TIME")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(.white.opacity(0.6))
+                    }
+                    
+                    // Vegas score
+                    if let score = vegasScore {
+                        VStack(spacing: 4) {
+                            Image(systemName: "dollarsign.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(score >= 0 ? .green : .red)
+                            Text(score >= 0 ? "+$\(score)" : "-$\(abs(score))")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundColor(score >= 0 ? .green : .red)
+                            Text("PROFIT")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
                     }
                 }
                 .foregroundColor(.white)

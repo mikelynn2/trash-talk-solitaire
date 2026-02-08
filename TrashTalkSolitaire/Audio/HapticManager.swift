@@ -1,5 +1,6 @@
 import UIKit
 
+@MainActor
 final class HapticManager {
     static let shared = HapticManager()
     
@@ -10,11 +11,7 @@ final class HapticManager {
     private let selectionGenerator = UISelectionFeedbackGenerator()
     
     private init() {
-        // Prepare generators for faster response
-        prepareAll()
-    }
-    
-    func prepareAll() {
+        // Prepare generators for lower latency
         lightGenerator.prepare()
         mediumGenerator.prepare()
         heavyGenerator.prepare()
@@ -22,25 +19,20 @@ final class HapticManager {
         selectionGenerator.prepare()
     }
     
-    // MARK: - Game Actions
+    // MARK: - Card Actions
     
     /// Light tap when picking up a card
     func cardPickup() {
         lightGenerator.impactOccurred()
     }
     
-    /// Selection feedback for card selection
-    func cardSelect() {
-        selectionGenerator.selectionChanged()
-    }
-    
-    /// Medium impact for valid card placement
+    /// Medium feedback when placing a card
     func cardPlace() {
         mediumGenerator.impactOccurred()
     }
     
-    /// Success notification for foundation placement
-    func foundationPlace() {
+    /// Success feedback when card goes to foundation
+    func cardToFoundation() {
         notificationGenerator.notificationOccurred(.success)
     }
     
@@ -49,35 +41,41 @@ final class HapticManager {
         notificationGenerator.notificationOccurred(.error)
     }
     
-    /// Heavy impact for winning the game
-    func win() {
-        // Triple burst for celebration
-        heavyGenerator.impactOccurred()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            self?.heavyGenerator.impactOccurred()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-            self?.heavyGenerator.impactOccurred()
-        }
-    }
+    // MARK: - Game Actions
     
-    /// Light tap for card flip
-    func cardFlip() {
-        lightGenerator.impactOccurred(intensity: 0.5)
-    }
-    
-    /// Medium for undo action
-    func undo() {
-        mediumGenerator.impactOccurred(intensity: 0.7)
-    }
-    
-    /// Light for drawing from stock
-    func draw() {
-        lightGenerator.impactOccurred(intensity: 0.6)
-    }
-    
-    /// Warning for hint used
+    /// Selection feedback for hint
     func hint() {
         selectionGenerator.selectionChanged()
+    }
+    
+    /// Light feedback for undo
+    func undo() {
+        lightGenerator.impactOccurred()
+    }
+    
+    /// Heavy feedback for win
+    func win() {
+        heavyGenerator.impactOccurred()
+        
+        // Double tap for emphasis
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.heavyGenerator.impactOccurred()
+        }
+    }
+    
+    /// Warning feedback (e.g., about to lose progress)
+    func warning() {
+        notificationGenerator.notificationOccurred(.warning)
+    }
+    
+    // MARK: - Achievement
+    
+    /// Special feedback for achievement unlock
+    func achievementUnlock() {
+        notificationGenerator.notificationOccurred(.success)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            self.mediumGenerator.impactOccurred()
+        }
     }
 }

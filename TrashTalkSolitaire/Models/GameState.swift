@@ -4,10 +4,17 @@ struct GameState {
     var tableau: [[Card]]       // 7 piles
     var foundations: [[Card]]   // 4 piles (one per suit, but indexed 0-3)
     var stock: [Card]           // draw pile
-    var waste: [Card]           // flipped from stock
+    var waste: [Card]           // flipped from waste
     var moveCount: Int
     var elapsedSeconds: Int
     var isWon: Bool
+    
+    // Draw 3 mode
+    var drawThreeMode: Bool = false
+    
+    // Vegas scoring
+    var vegasMode: Bool = false
+    var vegasScore: Int = -52  // Start at -$52
 
     static func empty() -> GameState {
         GameState(
@@ -17,7 +24,10 @@ struct GameState {
             waste: [],
             moveCount: 0,
             elapsedSeconds: 0,
-            isWon: false
+            isWon: false,
+            drawThreeMode: UserDefaults.standard.bool(forKey: "drawThreeMode"),
+            vegasMode: UserDefaults.standard.bool(forKey: "vegasMode"),
+            vegasScore: -52
         )
     }
 }
