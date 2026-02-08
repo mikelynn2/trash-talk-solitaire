@@ -4,7 +4,7 @@ import AVFoundation
 final class SpeechManager: NSObject, ObservableObject {
 
     @Published var isMuted: Bool = false
-    @Published var speechRate: Float = 0.44  // Slower grandma pace
+    @Published var speechRate: Float = 0.46  // Measured butler pace
 
     private let synthesizer = AVSpeechSynthesizer()
 
@@ -33,9 +33,9 @@ final class SpeechManager: NSObject, ObservableObject {
 
         let utterance = AVSpeechUtterance(string: text)
         
-        // Grandma pacing - slower, more deliberate
-        utterance.rate = 0.38  // Slower than default (0.5)
-        utterance.pitchMultiplier = 0.95  // Slightly lower for older voice
+        // Butler pacing - measured, dignified
+        utterance.rate = 0.42  // Deliberate but not slow
+        utterance.pitchMultiplier = 0.88  // Deeper, authoritative tone
         utterance.preUtteranceDelay = 0.2
         utterance.postUtteranceDelay = 0.3
         utterance.volume = 1.0
@@ -65,17 +65,17 @@ final class SpeechManager: NSObject, ObservableObject {
             v1.quality.rawValue > v2.quality.rawValue
         }
         
-        // Prefer female voices (Kate, Serena, Stephanie, etc.)
-        let femaleNames = ["Kate", "Serena", "Stephanie", "Fiona", "Moira"]
+        // Prefer male voices for butler persona (Daniel, Arthur, Oliver, etc.)
+        let maleNames = ["Daniel", "Arthur", "Oliver", "Malcolm", "Jamie"]
         
-        // Try to find a high-quality female voice
+        // Try to find a high-quality male British voice
         for voice in sortedVoices {
-            if femaleNames.contains(where: { voice.name.contains($0) }) {
+            if maleNames.contains(where: { voice.name.contains($0) }) {
                 return voice
             }
         }
         
-        // Fall back to any British voice
+        // Fall back to any British voice (Daniel is usually the default en-GB male)
         return sortedVoices.first ?? AVSpeechSynthesisVoice(language: "en-GB")
     }
 
