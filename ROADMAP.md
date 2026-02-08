@@ -74,12 +74,6 @@
 - [ ] Achievements gallery view
 - [ ] Persist in UserDefaults
 
-### 6. Themes
-- [ ] Card back designs (classic, floral, geometric, dark mode)
-- [ ] Table felt colors (green, blue, red, purple)
-- [ ] Unlockable via achievements or purchase
-- [ ] Preview in settings
-
 ---
 
 ## 🚀 Phase 3: Social (v1.3+)
