@@ -216,6 +216,26 @@ struct GameView: View {
                 CardView(card: Card(suit: .spades, rank: .ace), width: cardWidth)
                     .onTapGesture { vm.drawFromStock() }
             }
+            
+            // Draw mode toggle badge
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: { vm.toggleDrawThreeMode() }) {
+                        Text(vm.state.drawThreeMode ? "×3" : "×1")
+                            .font(.system(size: 10, weight: .black))
+                            .foregroundColor(.white)
+                            .frame(width: 22, height: 16)
+                            .background(
+                                Capsule()
+                                    .fill(vm.state.drawThreeMode ? Color.orange : Color.blue)
+                            )
+                    }
+                    .offset(x: 4, y: 4)
+                }
+            }
+            .frame(width: cardWidth, height: cardWidth * 1.4)
         }
     }
 

@@ -712,9 +712,9 @@ final class GameViewModel: ObservableObject {
         state.drawThreeMode.toggle()
         UserDefaults.standard.set(state.drawThreeMode, forKey: "drawThreeMode")
         if state.drawThreeMode {
-            setCommentary("Draw 3 mode. Feeling brave today?", mood: .neutral)
+            setCommentary("Draw three, sir. A bolder approach.", mood: .neutral)
         } else {
-            setCommentary("Back to easy mode. No judgment.", mood: .neutral)
+            setCommentary("Draw one. A more... cautious strategy.", mood: .neutral)
         }
     }
     
