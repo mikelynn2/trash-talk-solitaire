@@ -53,49 +53,18 @@
 
 ---
 
-## 🚧 Phase 2: Polish (v1.2)
-
-### Auto-Complete Fly Animation
-- [ ] Cards swoosh to foundations one-by-one
-- [ ] Arc trajectory with scale-down
-- [ ] Landing "pop" effect + sound
-- [ ] Butler: "Allow me to finish this, sir..."
-
-### More Achievements
-| Achievement | Requirement |
-|-------------|-------------|
-| Comeback King | Win after using 10+ undos |
-| Iron Will | Win on Hard difficulty |
-| Whale | Reach +$5000 lifetime (Vegas) |
-| Cold Streak | Lose 5 games in a row |
-
----
-
-## 🚀 Phase 3: Social (v1.3+)
-
-### Daily Challenge
-- [ ] Same shuffled deck for all players (seeded by date)
-- [ ] Global leaderboard (moves, time)
-- [ ] "Challenge a friend" share link
-- [ ] Special daily badge/streak
-
-### Multiplayer Race
-- [ ] Real-time head-to-head (same deal)
-- [ ] See opponent's progress bar
-- [ ] Butler trash talks opponent too
-
----
-
-## 📋 Backlog
+## 📋 Backlog (No Backend Required)
 
 - [ ] Landscape mode
 - [ ] iPad layout
-- [ ] Apple Watch widget
-- [ ] Siri shortcuts
+- [ ] Apple Watch widget (stats display)
+- [ ] Siri shortcuts ("Start a solitaire game")
 - [ ] Replay last game
 - [ ] Colorblind mode (suit patterns)
-- [ ] Left-handed mode
-- [ ] More butler personas
+- [ ] Left-handed mode (flip layout)
+- [ ] More butler personas (drill sergeant, etc.)
+- [ ] Auto-complete fly animation
+- [ ] Game history view
 
 ---
 
