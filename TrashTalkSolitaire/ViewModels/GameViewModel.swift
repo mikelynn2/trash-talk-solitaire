@@ -114,7 +114,13 @@ final class GameViewModel: ObservableObject {
             let aces = deck.filter { $0.rank == .ace }
             let nonAces = deck.filter { $0.rank != .ace }
             // Sort non-aces to clump colors (makes alternating harder)
-            let sortedNonAces = nonAces.sorted { $0.color == $1.color ? Bool.random() : $0.color.rawValue < $1.color.rawValue }
+            let sortedNonAces = nonAces.sorted { (card1, card2) -> Bool in
+                if card1.color == card2.color {
+                    return Bool.random()
+                }
+                // Group reds together, blacks together
+                return card1.color == .red && card2.color == .black
+            }
             // Put aces at the front (will be dealt to tableau first = buried deep)
             deck = aces.shuffled() + sortedNonAces
             // Light shuffle to not be too obvious
