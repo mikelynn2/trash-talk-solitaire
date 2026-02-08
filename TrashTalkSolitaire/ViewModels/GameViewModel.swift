@@ -44,7 +44,7 @@ final class GameViewModel: ObservableObject {
     func deal() {
         // Record loss for previous game if it was in progress
         if gameStarted && !hasRecordedGameEnd {
-            stats.recordLoss()
+            stats.recordLoss(vegasMode: state.vegasMode)
         }
         undoStack.removeAll()
         undoCount = 0

@@ -167,9 +167,15 @@ final class StatsManager: ObservableObject {
         checkAchievements(time: time, undoCount: undoCount, hintCount: hintCount)
     }
 
-    func recordLoss() {
+    func recordLoss(vegasMode: Bool = false) {
         gamesPlayed += 1
         currentStreak = 0
+        
+        // Vegas penalty: -$52 for abandoning a game
+        if vegasMode {
+            vegasCumulative -= 52
+        }
+        
         save()
         
         // Check games played achievements
