@@ -4,6 +4,15 @@ import SwiftUI
 struct TrashTalkSolitaireApp: App {
     @State private var showSplash = true
     
+    init() {
+        // Register default settings (Vegas mode ON by default)
+        UserDefaults.standard.register(defaults: [
+            "vegasMode": true,
+            "drawThreeMode": false,
+            "deckDifficulty": "Medium"
+        ])
+    }
+    
     var body: some Scene {
         WindowGroup {
             ZStack {
