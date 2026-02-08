@@ -26,11 +26,15 @@ final class Commentator {
     // Track used comments to avoid repeats within a session
     private var usedComments: Set<String> = []
     
+    // Hard limit: 2-4 comments per hand
+    private var commentsThisGame: Int = 0
+    private var maxCommentsThisGame: Int = 3  // Set randomly each game
+    
     // Probability of commenting even on notable moves (to avoid fatigue)
-    private let praiseChance: Double = 0.12     // 12% chance to comment on good moves (was 60%)
-    private let roastChance: Double = 0.14      // 14% chance to comment on bad moves (was 70%)
-    private let brilliantChance: Double = 0.20  // 20% chance for brilliant moves (was 95%)
-    private let terribleChance: Double = 0.20   // 20% chance for terrible moves (was 95%)
+    private let praiseChance: Double = 0.50     // Higher chance since we have hard limit now
+    private let roastChance: Double = 0.50
+    private let brilliantChance: Double = 0.70
+    private let terribleChance: Double = 0.70
 
     // MARK: - Game State Tracking
     
@@ -39,6 +43,8 @@ final class Commentator {
         hintCount = 0
         gameStartTime = Date()
         usedComments.removeAll()
+        commentsThisGame = 0
+        maxCommentsThisGame = Int.random(in: 2...4)  // 2-4 comments per hand
     }
     
     /// Pick a random comment that hasn't been used this session
@@ -162,9 +168,15 @@ final class Commentator {
             return nil
         }
         
-        // We're commenting - reset tracking
+        // Hard limit: 2-4 comments per hand
+        guard commentsThisGame < maxCommentsThisGame else {
+            return nil
+        }
+        
+        // We're commenting - update tracking
         lastCommentTime = Date()
         movesSinceLastComment = 0
+        commentsThisGame += 1
         
         return MoveAnalysis(mood: mood, comment: comment)
     }
