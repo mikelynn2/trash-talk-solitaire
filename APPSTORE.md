@@ -19,21 +19,21 @@ Games → Card
 
 **Finally, a card game that judges you.**
 
-Trash Talk Solitaire is classic Klondike solitaire with a twist — a snarky British commentator who roasts your bad moves and reluctantly praises your good ones.
+Trash Talk Solitaire is classic Klondike solitaire with a twist — a dry British butler who observes your every move with thinly veiled disappointment.
 
 **Features:**
 • Classic Klondike solitaire gameplay
 • Witty AI commentary on every notable move
-• British grandmother voice that's equal parts disappointed and proud
+• Dry British butler voice — dignified, disapproving, devastating
 • Satisfying card sounds and haptic feedback
 • Smooth animations and easy drag-and-drop
 • Auto-complete when victory is in sight
 • Beautiful green felt design
 
 **Sample Commentary:**
-• "Oh, burying that King? Bold strategy, let's see how that works out..."
-• "That move was so bad, the cards are embarrassed for you."
-• "Finally! A move that doesn't make me question your life choices."
+• "Burying a card, sir? A bold strategy. Bold, and inadvisable."
+• "I have served many masters, sir. None have buried cards with such enthusiasm."
+• "A sensible move. How refreshingly out of character."
 
 No ads. No in-app purchases. Just you, 52 cards, and a voice that won't let you forget your mistakes.
 

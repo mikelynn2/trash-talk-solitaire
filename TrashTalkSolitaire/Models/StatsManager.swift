@@ -12,7 +12,7 @@ enum Achievement: String, CaseIterable, Identifiable {
     case centuryClub = "century_club"         // 100 games played
     case cardShark = "card_shark"             // 50 wins
     case highRoller = "high_roller"           // +$1000 Vegas cumulative
-    case grandmasFavorite = "grandmas_fav"    // 10 wins in one day
+    case butlersChoice = "butlers_choice"    // 10 wins in one day
     
     var id: String { rawValue }
     
@@ -27,7 +27,7 @@ enum Achievement: String, CaseIterable, Identifiable {
         case .centuryClub: return "Century Club"
         case .cardShark: return "Card Shark"
         case .highRoller: return "High Roller"
-        case .grandmasFavorite: return "Grandma's Favorite"
+        case .butlersChoice: return "Butler's Choice"
         }
     }
     
@@ -42,7 +42,7 @@ enum Achievement: String, CaseIterable, Identifiable {
         case .centuryClub: return "Play 100 games"
         case .cardShark: return "Win 50 games"
         case .highRoller: return "Earn $1,000 in Vegas mode"
-        case .grandmasFavorite: return "Win 10 games in one day"
+        case .butlersChoice: return "Win 10 games in one day"
         }
     }
     
@@ -57,7 +57,7 @@ enum Achievement: String, CaseIterable, Identifiable {
         case .centuryClub: return "100.circle.fill"
         case .cardShark: return "fish.fill"
         case .highRoller: return "dollarsign.circle.fill"
-        case .grandmasFavorite: return "heart.fill"
+        case .butlersChoice: return "star.fill"
         }
     }
     
@@ -72,7 +72,7 @@ enum Achievement: String, CaseIterable, Identifiable {
         case .centuryClub: return "blue"
         case .cardShark: return "cyan"
         case .highRoller: return "green"
-        case .grandmasFavorite: return "pink"
+        case .butlersChoice: return "gold"
         }
     }
 }
@@ -220,7 +220,7 @@ final class StatsManager: ObservableObject {
         
         // Daily wins
         if winsToday >= 10 {
-            unlock(.grandmasFavorite)
+            unlock(.butlersChoice)
         }
     }
     

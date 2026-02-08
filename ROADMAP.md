@@ -10,7 +10,7 @@
 
 - [x] Full Klondike solitaire engine
 - [x] AI commentator with 80+ lines (roasts, praise, situational)
-- [x] British grandmother TTS voice
+- [x] British butler TTS voice
 - [x] Sound effects + haptics
 - [x] Smooth card animations + 3D flip
 - [x] Stats tracking (games, wins, streaks, best time)
@@ -27,7 +27,7 @@
 - [ ] Cards swoosh to foundations one-by-one (0.15s delay each)
 - [ ] Arc trajectory with scale-down during flight
 - [ ] Landing "pop" effect + sound
-- [ ] Grandma: "Finally, let me finish this for you..."
+- [ ] Butler: "Finally, let me finish this for you..."
 - [ ] Disable interaction during animation
 
 ### 2. Undo Snark Escalation
@@ -43,7 +43,7 @@
 - [ ] Fan 3 waste cards visually (offset stack)
 - [ ] Only top card playable
 - [ ] Persist preference in UserDefaults
-- [ ] Grandma: "Oh, feeling brave today?"
+- [ ] Butler: "Oh, feeling brave today?"
 
 ---
 
@@ -54,7 +54,7 @@
 - [ ] Max payout: $260 - $52 = +$208
 - [ ] Optional cumulative bankroll across games
 - [ ] Show profit/loss on win screen
-- [ ] Grandma comments on gambling habits
+- [ ] Butler comments on gambling habits
 
 ### 5. Achievements System
 | Achievement | Requirement |
@@ -68,9 +68,9 @@
 | Century Club | Play 100 games |
 | Card Shark | Win 50 games |
 | High Roller | Reach +$1000 (Vegas mode) |
-| Grandma's Favorite | Win 10 games in one day |
+| Butler's Favorite | Win 10 games in one day |
 
-- [ ] Achievement unlock animation + grandma praise
+- [ ] Achievement unlock animation + butler praise
 - [ ] Achievements gallery view
 - [ ] Persist in UserDefaults
 
@@ -95,7 +95,7 @@
 - [ ] Real-time head-to-head (same deal)
 - [ ] See opponent's progress bar
 - [ ] First to complete wins
-- [ ] Grandma trash talks opponent too
+- [ ] Butler trash talks opponent too
 - [ ] Requires Game Center or custom backend
 
 ---
@@ -110,8 +110,8 @@
 - [ ] Replay last game
 - [ ] Colorblind accessibility (suit patterns)
 - [ ] Left-handed mode (flip layout)
-- [ ] Custom grandma voice pitch/speed
-- [ ] More grandma personas (drill sergeant, valley girl, etc.)
+- [ ] Custom butler voice pitch/speed
+- [ ] More butler personas (drill sergeant, valley girl, etc.)
 
 ---
 
