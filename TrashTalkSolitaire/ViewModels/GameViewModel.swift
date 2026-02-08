@@ -614,6 +614,13 @@ final class GameViewModel: ObservableObject {
     }
     
     private func findHint() -> (MoveSource, MoveDestination)? {
+        // Only suggest moves that IMPROVE the game state:
+        // - Foundation moves (always good)
+        // - Moves that reveal face-down cards
+        // - Waste to tableau (clears waste)
+        // - King to empty ONLY if it reveals a card
+        // NO lateral moves that just shuffle cards around!
+        
         // Priority 1: Foundation moves from waste
         if let card = state.waste.last {
             for i in 0..<4 {
@@ -636,29 +643,27 @@ final class GameViewModel: ObservableObject {
             }
         }
         
-        // Priority 3: King to empty column
-        for pile in 0..<7 {
-            for (idx, card) in state.tableau[pile].enumerated() {
-                guard card.isFaceUp, card.rank == .king, idx > 0 else { continue }
-                // Find an empty column
-                for destPile in 0..<7 {
-                    if state.tableau[destPile].isEmpty {
-                        return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
-                    }
-                }
-            }
-        }
-        
-        // Priority 4: Tableau to tableau moves that reveal a card
+        // Priority 3: Tableau moves that REVEAL a face-down card
         for pile in 0..<7 {
             for (idx, card) in state.tableau[pile].enumerated() {
                 guard card.isFaceUp else { continue }
-                // Check if moving this would reveal a face-down card
+                // Only suggest if this reveals a face-down card
                 let wouldReveal = idx > 0 && !state.tableau[pile][idx - 1].isFaceUp
+                guard wouldReveal else { continue }
                 
+                // King to empty column (only if reveals)
+                if card.rank == .king {
+                    for destPile in 0..<7 where destPile != pile {
+                        if state.tableau[destPile].isEmpty {
+                            return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
+                        }
+                    }
+                }
+                
+                // Non-king to tableau (only if reveals)
                 for destPile in 0..<7 where destPile != pile {
                     if let topCard = state.tableau[destPile].last {
-                        if card.canStackOnTableau(topCard) && wouldReveal {
+                        if card.canStackOnTableau(topCard) {
                             return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
                         }
                     }
@@ -666,7 +671,7 @@ final class GameViewModel: ObservableObject {
             }
         }
         
-        // Priority 5: Waste to tableau
+        // Priority 4: Waste to tableau (always helpful to clear waste)
         if let card = state.waste.last {
             for destPile in 0..<7 {
                 if let topCard = state.tableau[destPile].last {
@@ -679,19 +684,8 @@ final class GameViewModel: ObservableObject {
             }
         }
         
-        // Priority 6: Any valid tableau move
-        for pile in 0..<7 {
-            for (idx, card) in state.tableau[pile].enumerated() {
-                guard card.isFaceUp else { continue }
-                for destPile in 0..<7 where destPile != pile {
-                    if let topCard = state.tableau[destPile].last {
-                        if card.canStackOnTableau(topCard) {
-                            return (.tableau(pile: pile, cardIndex: idx), .tableau(pile: destPile))
-                        }
-                    }
-                }
-            }
-        }
+        // NO Priority 5/6 - we don't suggest lateral moves that don't improve state
+        // If we reach here, there are no USEFUL moves
         
         return nil
     }
