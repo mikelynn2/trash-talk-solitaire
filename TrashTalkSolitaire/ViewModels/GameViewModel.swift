@@ -603,7 +603,16 @@ final class GameViewModel: ObservableObject {
                 self?.clearHint()
             }
         } else {
-            setCommentary("No moves available. Try drawing from the stock.", mood: .roast)
+            // Check if stock/waste have cards to draw
+            if !state.stock.isEmpty {
+                setCommentary("No useful moves, sir. Perhaps try the stock.", mood: .roast)
+            } else if !state.waste.isEmpty {
+                setCommentary("No useful moves. The waste pile awaits recycling.", mood: .roast)
+            } else {
+                // Stock AND waste are empty - truly stuck
+                showNoMovesAlert = true
+                setCommentary("No moves remain, sir. A regrettable conclusion.", mood: .roast)
+            }
         }
     }
     
