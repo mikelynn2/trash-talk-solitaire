@@ -424,6 +424,8 @@ struct GameView: View {
         DragGesture(coordinateSpace: .global)
             .onChanged { value in
                 if dragSource == nil {
+                    print("🖐️ DRAG START: \(cards.map { "\($0.rank.display)\($0.suit.symbol)" }) from \(source)")
+                    print("   Card count before drag: \(vm.totalCardCount())")
                     dragSource = source
                     dragCards = cards
                     dragStartLocation = value.startLocation
@@ -432,6 +434,9 @@ struct GameView: View {
                 dragOffset = value.translation
             }
             .onEnded { value in
+                print("🖐️ DRAG END: \(dragCards.map { "\($0.rank.display)\($0.suit.symbol)" })")
+                print("   Card count at drag end: \(vm.totalCardCount())")
+                
                 // Check for flick gesture (fast swipe)
                 let velocity = CGSize(
                     width: value.predictedEndLocation.x - value.location.x,
@@ -441,11 +446,15 @@ struct GameView: View {
                 
                 if speed > 100 {
                     // It's a flick! Try to auto-move based on direction
+                    print("   Flick detected (speed: \(speed))")
                     handleFlick(velocity: velocity, from: source)
                 } else {
                     // Normal drop
+                    print("   Normal drop at \(value.location)")
                     handleDrop(at: value.location)
                 }
+                
+                print("   Card count after drop handling: \(vm.totalCardCount())")
                 
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     dragOffset = .zero
@@ -523,7 +532,12 @@ struct GameView: View {
     }
 
     private func handleDrop(at location: CGPoint) {
-        guard let source = dragSource else { return }
+        guard let source = dragSource else {
+            print("   ⚠️ handleDrop called but dragSource is nil!")
+            return
+        }
+        
+        print("   handleDrop: source=\(source), location=\(location)")
         
         // Find the closest valid target (by distance to center)
         var bestTarget: MoveDestination?
@@ -559,9 +573,14 @@ struct GameView: View {
         
         // Execute the best valid move found
         if let target = bestTarget {
-            _ = vm.executeMove(from: source, to: target)
+            print("   Executing move: \(source) -> \(target)")
+            let success = vm.executeMove(from: source, to: target)
+            print("   Move result: \(success ? "SUCCESS" : "FAILED")")
+            print("   Card count after executeMove: \(vm.totalCardCount())")
             vm.selectedSource = nil
             HapticManager.shared.cardPlace()
+        } else {
+            print("   No valid target found - card returns to source")
         }
     }
     
