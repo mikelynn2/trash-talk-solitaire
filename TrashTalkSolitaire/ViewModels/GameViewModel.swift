@@ -93,6 +93,14 @@ final class GameViewModel: ObservableObject {
         // Verify we start with exactly 52 cards
         assert(deck.count == 52, "Full deck should have 52 cards, got \(deck.count)")
         
+        // Debug: verify 6♣ exists in fresh deck
+        let sixClubs = deck.filter { $0.rank == .six && $0.suit == .clubs }
+        if sixClubs.isEmpty {
+            print("🚨 6♣ MISSING from fresh fullDeck()!")
+        } else {
+            print("✅ 6♣ present in fresh deck")
+        }
+        
         switch difficulty {
         case .easy:
             // Bias aces and low cards toward the end (more accessible positions)
@@ -137,6 +145,14 @@ final class GameViewModel: ObservableObject {
         
         // Final verification - ensure shuffle didn't lose any cards
         assert(deck.count == 52, "Deck after shuffle should have 52 cards, got \(deck.count)")
+        
+        // Debug: verify 6♣ still exists after shuffle
+        let sixClubsAfter = deck.filter { $0.rank == .six && $0.suit == .clubs }
+        if sixClubsAfter.isEmpty {
+            print("🚨 6♣ LOST during \(difficulty) shuffle!")
+        } else {
+            print("✅ 6♣ still present after \(difficulty) shuffle")
+        }
         
         return deck
     }
