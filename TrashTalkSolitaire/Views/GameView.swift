@@ -119,6 +119,11 @@ struct GameView: View {
             } message: {
                 Text("There are no more valid moves. Would you like to start a new game?")
             }
+            .alert("🚨 Card Count Error", isPresented: $vm.showCardCountError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(vm.cardCountErrorMessage)
+            }
         }
         .statusBarHidden(false)
     }

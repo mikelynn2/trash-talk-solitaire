@@ -16,6 +16,8 @@ final class GameViewModel: ObservableObject {
     @Published var flyingCard: Card?
     @Published var flyingCardPosition: CGPoint = .zero
     @Published var showNoMovesAlert: Bool = false
+    @Published var showCardCountError: Bool = false
+    @Published var cardCountErrorMessage: String = ""
 
     // MARK: - Dependencies
 
@@ -520,19 +522,33 @@ final class GameViewModel: ObservableObject {
                 state.foundations.flatMap { $0 }
             let expectedDeck = Card.fullDeck()
             
+            var missingCards: [String] = []
+            var duplicateCards: [String] = []
+            
             // Check for missing cards by suit/rank combo
             for expected in expectedDeck {
                 let found = allCards.filter { $0.suit == expected.suit && $0.rank == expected.rank }
                 if found.isEmpty {
-                    print("  ❌ MISSING: \(expected.rank.display)\(expected.suit.symbol)")
+                    let cardName = "\(expected.rank.display)\(expected.suit.symbol)"
+                    print("  ❌ MISSING: \(cardName)")
+                    missingCards.append(cardName)
                 } else if found.count > 1 {
-                    print("  ⚠️ DUPLICATE: \(expected.rank.display)\(expected.suit.symbol) x\(found.count)")
+                    let cardName = "\(expected.rank.display)\(expected.suit.symbol)"
+                    print("  ⚠️ DUPLICATE: \(cardName) x\(found.count)")
+                    duplicateCards.append("\(cardName) x\(found.count)")
                 }
             }
             
-            #if DEBUG
-            assertionFailure("Card count mismatch: \(count) instead of 52")
-            #endif
+            // Show visible alert
+            var errorMsg = "Card count: \(count)/52\n"
+            if !missingCards.isEmpty {
+                errorMsg += "Missing: \(missingCards.joined(separator: ", "))\n"
+            }
+            if !duplicateCards.isEmpty {
+                errorMsg += "Duplicates: \(duplicateCards.joined(separator: ", "))"
+            }
+            cardCountErrorMessage = errorMsg
+            showCardCountError = true
         }
     }
 
