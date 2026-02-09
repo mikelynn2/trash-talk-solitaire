@@ -441,6 +441,9 @@ final class GameViewModel: ObservableObject {
             setCommentary("Nothing to undo. Your mistakes are permanent.", mood: .roast)
             return
         }
+        
+        print("⏪ UNDO: \(move.cards.map { "\($0.rank.display)\($0.suit.symbol)" }) from \(move.destination) back to \(move.source)")
+        print("   Card count before undo: \(totalCardCount())")
 
         selectedSource = nil
 
@@ -469,7 +472,9 @@ final class GameViewModel: ObservableObject {
         // Put cards back at source
         switch move.source {
         case .waste:
-            state.waste = move.previousWaste
+            // Don't replace entire waste - just add the card back
+            // (previousWaste replacement was buggy if user drew cards after the move)
+            state.waste.append(contentsOf: move.cards)
         case .tableau(let pile, let cardIndex):
             state.tableau[pile].insert(contentsOf: move.cards, at: cardIndex)
         case .foundation(let pile):
@@ -496,6 +501,8 @@ final class GameViewModel: ObservableObject {
             undoComment = ["I've lost count of your undos. Impressive, in a sad way.", "You've undone so much, we're practically back at the start.", "The undo button is filing for overtime pay."].randomElement()!
         }
         setCommentary(undoComment, mood: .roast)
+        
+        print("   Card count after undo: \(totalCardCount())")
         validateCardCount()
     }
 
