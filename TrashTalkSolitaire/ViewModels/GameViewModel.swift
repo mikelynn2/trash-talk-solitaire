@@ -66,6 +66,20 @@ final class GameViewModel: ObservableObject {
             }
         }
 
+        // Debug: count cards before creating game state
+        let tableauCount = tableau.reduce(0) { $0 + $1.count }
+        let stockCount = deck.count
+        print("📊 Deal complete: tableau=\(tableauCount), stock=\(stockCount), total=\(tableauCount + stockCount)")
+        
+        // Check if 6♣ made it through the deal
+        let allDealtCards = tableau.flatMap { $0 } + deck
+        let sixClubsDealt = allDealtCards.filter { $0.rank == .six && $0.suit == .clubs }
+        if sixClubsDealt.isEmpty {
+            print("🚨 6♣ LOST during deal phase!")
+        } else {
+            print("✅ 6♣ present after deal (in \(tableau.flatMap { $0 }.contains { $0.rank == .six && $0.suit == .clubs } ? "tableau" : "stock"))")
+        }
+        
         state = GameState(
             tableau: tableau,
             foundations: Array(repeating: [], count: 4),
