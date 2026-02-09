@@ -90,6 +90,9 @@ final class GameViewModel: ObservableObject {
     private func shuffleDeck(difficulty: DeckDifficulty) -> [Card] {
         var deck = Card.fullDeck()
         
+        // Verify we start with exactly 52 cards
+        assert(deck.count == 52, "Full deck should have 52 cards, got \(deck.count)")
+        
         switch difficulty {
         case .easy:
             // Bias aces and low cards toward the end (more accessible positions)
@@ -131,6 +134,9 @@ final class GameViewModel: ObservableObject {
                 deck.swapAt(i, j)
             }
         }
+        
+        // Final verification - ensure shuffle didn't lose any cards
+        assert(deck.count == 52, "Deck after shuffle should have 52 cards, got \(deck.count)")
         
         return deck
     }
@@ -477,6 +483,26 @@ final class GameViewModel: ObservableObject {
             print("  Waste: \(state.waste.count)")
             print("  Tableau: \(state.tableau.map { $0.count })")
             print("  Foundations: \(state.foundations.map { $0.count })")
+            
+            // Find which cards are missing
+            let allCards = state.stock + state.waste + 
+                state.tableau.flatMap { $0 } + 
+                state.foundations.flatMap { $0 }
+            let expectedDeck = Card.fullDeck()
+            
+            // Check for missing cards by suit/rank combo
+            for expected in expectedDeck {
+                let found = allCards.filter { $0.suit == expected.suit && $0.rank == expected.rank }
+                if found.isEmpty {
+                    print("  ❌ MISSING: \(expected.rank.display)\(expected.suit.symbol)")
+                } else if found.count > 1 {
+                    print("  ⚠️ DUPLICATE: \(expected.rank.display)\(expected.suit.symbol) x\(found.count)")
+                }
+            }
+            
+            #if DEBUG
+            assertionFailure("Card count mismatch: \(count) instead of 52")
+            #endif
         }
     }
 
