@@ -4,6 +4,7 @@ struct GameView: View {
     @StateObject private var vm = GameViewModel()
     @State private var showSettings = false
     @State private var showAchievements = false
+    @State private var showDebugTest = false
     @State private var dragCards: [Card] = []
     @State private var dragSource: MoveSource?
     @State private var dragOffset: CGSize = .zero
@@ -124,8 +125,65 @@ struct GameView: View {
             } message: {
                 Text(vm.cardCountErrorMessage)
             }
+            .sheet(isPresented: $showDebugTest) {
+                debugTestSheet
+            }
         }
         .statusBarHidden(false)
+    }
+    
+    // MARK: - Debug Test Sheet
+    
+    private var debugTestSheet: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("Card Count Bug Test")
+                    .font(.title2.bold())
+                
+                Text("This will play \(100) games automatically and check for missing cards after every move.")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                
+                if vm.isAutoPlayRunning {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .padding()
+                }
+                
+                ScrollView {
+                    Text(vm.autoPlayLog)
+                        .font(.system(.caption, design: .monospaced))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                }
+                .frame(height: 300)
+                .background(Color.black.opacity(0.05))
+                .cornerRadius(8)
+                .padding(.horizontal)
+                
+                Button(action: {
+                    vm.runAutoPlayTest(games: 100, movesPerGame: 200)
+                }) {
+                    Text(vm.isAutoPlayRunning ? "Running..." : "Run 100 Game Test")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(vm.isAutoPlayRunning ? Color.gray : Color.blue)
+                        .cornerRadius(10)
+                }
+                .disabled(vm.isAutoPlayRunning)
+                .padding(.horizontal)
+            }
+            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { showDebugTest = false }
+                }
+            }
+        }
     }
 
     // MARK: - Top Bar
@@ -698,6 +756,24 @@ struct GameView: View {
                         }
                     }
                 }
+                
+                // MARK: Debug (remove before App Store)
+                #if DEBUG
+                Section("Developer") {
+                    Button {
+                        showSettings = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showDebugTest = true
+                        }
+                    } label: {
+                        Label("Run Card Count Test", systemImage: "ladybug")
+                    }
+                    
+                    Text("Current card count: \(vm.totalCardCount())")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                #endif
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

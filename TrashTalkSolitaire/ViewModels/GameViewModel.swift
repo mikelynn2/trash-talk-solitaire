@@ -347,31 +347,57 @@ final class GameViewModel: ObservableObject {
         )
 
         // Remove cards from source
+        let countBefore = totalCardCount()
+        print("🔄 MOVE: \(cards.map { "\($0.rank.display)\($0.suit.symbol)" }) from \(source) to \(destination)")
+        print("   Count before: \(countBefore)")
+        
         switch source {
         case .waste:
+            print("   Removing from waste (had \(state.waste.count) cards)")
             state.waste.removeLast()
+            print("   Waste now has \(state.waste.count) cards")
         case .tableau(let pile, let cardIndex):
+            print("   Removing \(state.tableau[pile].count - cardIndex) cards from tableau[\(pile)] (had \(state.tableau[pile].count))")
             state.tableau[pile].removeSubrange(cardIndex...)
+            print("   Tableau[\(pile)] now has \(state.tableau[pile].count) cards")
         case .foundation(let pile):
+            print("   Removing from foundation[\(pile)] (had \(state.foundations[pile].count) cards)")
             state.foundations[pile].removeLast()
+            print("   Foundation[\(pile)] now has \(state.foundations[pile].count) cards")
             // Vegas: lose $5 for removing from foundation
             if state.vegasMode {
                 state.vegasScore -= 5
             }
         }
+        
+        let countAfterRemove = totalCardCount()
+        print("   Count after remove: \(countAfterRemove) (expected \(countBefore - cards.count))")
+        if countAfterRemove != countBefore - cards.count {
+            print("   ⚠️ UNEXPECTED: Lost \(countBefore - cards.count - countAfterRemove) extra cards during remove!")
+        }
 
         // Place cards at destination
         switch destination {
         case .tableau(let destPile):
+            print("   Adding \(cards.count) cards to tableau[\(destPile)] (had \(state.tableau[destPile].count))")
             state.tableau[destPile].append(contentsOf: cards)
+            print("   Tableau[\(destPile)] now has \(state.tableau[destPile].count) cards")
             sounds.playCardPlace()
         case .foundation(let destPile):
+            print("   Adding \(cards.count) cards to foundation[\(destPile)] (had \(state.foundations[destPile].count))")
             state.foundations[destPile].append(contentsOf: cards)
+            print("   Foundation[\(destPile)] now has \(state.foundations[destPile].count) cards")
             sounds.playFoundation()
             // Vegas: earn $5 for each card to foundation
             if state.vegasMode {
                 state.vegasScore += 5
             }
+        }
+        
+        let countAfterAdd = totalCardCount()
+        print("   Count after add: \(countAfterAdd) (expected \(countBefore))")
+        if countAfterAdd != countBefore {
+            print("   🚨 CARD COUNT ERROR: Expected \(countBefore), got \(countAfterAdd)")
         }
 
         // Auto-flip newly exposed card
@@ -837,5 +863,166 @@ final class GameViewModel: ObservableObject {
         } else {
             return "-$\(abs(state.vegasScore))"
         }
+    }
+    
+    // MARK: - Debug Auto-Play
+    
+    @Published var autoPlayLog: String = ""
+    @Published var isAutoPlayRunning: Bool = false
+    
+    func runAutoPlayTest(games: Int = 100, movesPerGame: Int = 200) {
+        isAutoPlayRunning = true
+        autoPlayLog = "Starting \(games) game test...\n"
+        
+        Task {
+            var gamesWithErrors = 0
+            var totalMoves = 0
+            
+            for gameNum in 1...games {
+                // Start new game
+                deal()
+                validateCardCount()
+                
+                if totalCardCount() != 52 {
+                    autoPlayLog += "❌ Game \(gameNum): Card count error at deal! Count: \(totalCardCount())\n"
+                    gamesWithErrors += 1
+                    continue
+                }
+                
+                // Play random moves
+                for moveNum in 1...movesPerGame {
+                    let moveMade = makeRandomMove()
+                    if moveMade {
+                        totalMoves += 1
+                        let count = totalCardCount()
+                        if count != 52 {
+                            autoPlayLog += "❌ Game \(gameNum), Move \(moveNum): Card count = \(count)\n"
+                            gamesWithErrors += 1
+                            break
+                        }
+                    }
+                    
+                    // Check for win
+                    if state.foundations.allSatisfy({ $0.count == 13 }) {
+                        break
+                    }
+                    
+                    // Check for stuck (no moves possible)
+                    if findAllValidMovePairs().isEmpty && state.stock.isEmpty && state.waste.isEmpty {
+                        break
+                    }
+                }
+                
+                // Progress update every 10 games
+                if gameNum % 10 == 0 {
+                    autoPlayLog += "Progress: \(gameNum)/\(games) games, \(totalMoves) moves\n"
+                }
+            }
+            
+            autoPlayLog += "\n=== TEST COMPLETE ===\n"
+            autoPlayLog += "Games played: \(games)\n"
+            autoPlayLog += "Total moves: \(totalMoves)\n"
+            autoPlayLog += "Games with errors: \(gamesWithErrors)\n"
+            autoPlayLog += gamesWithErrors == 0 ? "✅ ALL TESTS PASSED\n" : "❌ ERRORS FOUND\n"
+            
+            isAutoPlayRunning = false
+        }
+    }
+    
+    private func makeRandomMove() -> Bool {
+        // Try drawing from stock first (50% chance if available)
+        if !state.stock.isEmpty && Bool.random() {
+            drawFromStock()
+            return true
+        }
+        
+        // Find all valid moves
+        let moves = findAllValidMovePairs()
+        if moves.isEmpty {
+            // If no moves and stock has cards, draw
+            if !state.stock.isEmpty {
+                drawFromStock()
+                return true
+            }
+            // If stock is empty but waste has cards, draw to recycle
+            if state.stock.isEmpty && !state.waste.isEmpty {
+                drawFromStock()
+                return true
+            }
+            return false
+        }
+        
+        // Pick a random move and execute it
+        let (source, dest) = moves.randomElement()!
+        _ = executeMove(from: source, to: dest)
+        return true
+    }
+    
+    private func findAllValidMovePairs() -> [(MoveSource, MoveDestination)] {
+        var moves: [(MoveSource, MoveDestination)] = []
+        
+        // Moves from waste
+        if let topWaste = state.waste.last {
+            // To foundations
+            for (fIdx, foundation) in state.foundations.enumerated() {
+                if canMoveToFoundationTest(card: topWaste, foundation: foundation) {
+                    moves.append((.waste, .foundation(pile: fIdx)))
+                }
+            }
+            // To tableau
+            for (tIdx, pile) in state.tableau.enumerated() {
+                if canMoveToTableauTest(card: topWaste, pile: pile) {
+                    moves.append((.waste, .tableau(pile: tIdx)))
+                }
+            }
+        }
+        
+        // Moves from tableau
+        for (srcIdx, srcPile) in state.tableau.enumerated() {
+            guard !srcPile.isEmpty else { continue }
+            
+            // Find first face-up card
+            guard let faceUpStart = srcPile.firstIndex(where: { $0.isFaceUp }) else { continue }
+            
+            // Top card to foundation
+            if let topCard = srcPile.last {
+                for (fIdx, foundation) in state.foundations.enumerated() {
+                    if canMoveToFoundationTest(card: topCard, foundation: foundation) {
+                        moves.append((.tableau(pile: srcIdx, cardIndex: srcPile.count - 1), .foundation(pile: fIdx)))
+                    }
+                }
+            }
+            
+            // Face-up stacks to other tableau
+            for cardIdx in faceUpStart..<srcPile.count {
+                let card = srcPile[cardIdx]
+                
+                for (destIdx, destPile) in state.tableau.enumerated() {
+                    guard destIdx != srcIdx else { continue }
+                    if canMoveToTableauTest(card: card, pile: destPile) {
+                        moves.append((.tableau(pile: srcIdx, cardIndex: cardIdx), .tableau(pile: destIdx)))
+                    }
+                }
+            }
+        }
+        
+        return moves
+    }
+    
+    private func canMoveToFoundationTest(card: Card, foundation: [Card]) -> Bool {
+        if foundation.isEmpty {
+            return card.rank == .ace
+        }
+        guard let top = foundation.last else { return false }
+        return card.suit == top.suit && card.rank.rawValue == top.rank.rawValue + 1
+    }
+    
+    private func canMoveToTableauTest(card: Card, pile: [Card]) -> Bool {
+        if pile.isEmpty {
+            return card.rank == .king
+        }
+        guard let top = pile.last, top.isFaceUp else { return false }
+        let oppositeColor = (card.suit == .hearts || card.suit == .diamonds) != (top.suit == .hearts || top.suit == .diamonds)
+        return oppositeColor && card.rank.rawValue == top.rank.rawValue - 1
     }
 }
